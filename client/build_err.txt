@@ -1,0 +1,145 @@
+﻿
+> my-personal-project@0.0.0 build
+> vite build
+
+[36mvite v4.5.14 [32mbuilding for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 1757 modules transformed.
+[32mΓ£ô built in 7.23s[39m
+node.exe : 
+[31m"ReceiptText" is 
+not exported by "node_m
+odules/lucide-react/dis
+t/esm/lucide-react.js",
+ imported by "src/compo
+nents/common/BookingMod
+al.jsx".[39m
+At C:\nvm4w\nodejs\npm.
+ps1:16 char:5
++     & 
+"$basedir/node$exe"  "$
+basedir/node_modules/np
+m/bin/npm-cli.js" ...
++     ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([31m"Receipt   
+ Te...odal.jsx".[3    
+9m:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+file: [36mC:/Users/suc
+cess/Desktop/My 
+personal project/client
+/src/components/common/
+BookingModal.jsx:3:61[
+39m
+[33m1: import React, 
+{ useState, useEffect 
+} from 'react';
+2: import { motion, 
+AnimatePresence } from 
+'framer-motion';
+3: import { X, 
+Calendar, MapPin, 
+Loader2, ArrowRight, 
+Settings, ReceiptText, 
+ShieldCheck } from 
+'lucide-react';
+                       
+                       
+                  ^
+4: import { 
+bookingService } from 
+'../../services/api';
+5: import { useAuth } 
+from '../../hooks/useAu
+th';[39m
+[31merror during 
+build:
+RollupError: 
+"ReceiptText" is not 
+exported by "node_modul
+es/lucide-react/dist/es
+m/lucide-react.js", 
+imported by "src/compon
+ents/common/BookingModa
+l.jsx".
+    at error (file:///C
+:/Users/success/Desktop
+/My%20personal%20projec
+t/client/node_modules/r
+ollup/dist/es/shared/no
+de-entry.js:2287:30)
+    at Module.error (fi
+le:///C:/Users/success/
+Desktop/My%20personal%2
+0project/client/node_mo
+dules/rollup/dist/es/sh
+ared/node-entry.js:1375
+1:16)
+    at 
+Module.traceVariable (f
+ile:///C:/Users/success
+/Desktop/My%20personal%
+20project/client/node_m
+odules/rollup/dist/es/s
+hared/node-entry.js:141
+81:29)
+    at ModuleScope.find
+Variable (file:///C:/Us
+ers/success/Desktop/My%
+20personal%20project/cl
+ient/node_modules/rollu
+p/dist/es/shared/node-e
+ntry.js:12621:39)
+    at ReturnValueScope
+.findVariable (file:///
+C:/Users/success/Deskto
+p/My%20personal%20proje
+ct/client/node_modules/
+rollup/dist/es/shared/n
+ode-entry.js:7130:38)
+    at ChildScope.findV
+ariable (file:///C:/Use
+rs/success/Desktop/My%2
+0personal%20project/cli
+ent/node_modules/rollup
+/dist/es/shared/node-en
+try.js:7130:38)
+    at Identifier.bind 
+(file:///C:/Users/succe
+ss/Desktop/My%20persona
+l%20project/client/node
+_modules/rollup/dist/es
+/shared/node-entry.js:8
+325:40)
+    at 
+CallExpression.bind (fi
+le:///C:/Users/success/
+Desktop/My%20personal%2
+0project/client/node_mo
+dules/rollup/dist/es/sh
+ared/node-entry.js:5894
+:28)
+    at 
+CallExpression.bind (fi
+le:///C:/Users/success/
+Desktop/My%20personal%2
+0project/client/node_mo
+dules/rollup/dist/es/sh
+ared/node-entry.js:9896
+:15)
+    at Property.bind (f
+ile:///C:/Users/success
+/Desktop/My%20personal%
+20project/client/node_m
+odules/rollup/dist/es/s
+hared/node-entry.js:589
+8:23)[39m
