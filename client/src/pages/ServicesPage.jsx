@@ -8,12 +8,12 @@ import Container from '../components/ui/Container';
 
 const ServicesPage = () => {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 pb-24 bg-white">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-24 pb-24 bg-white">
       
       {/* Services Hero */}
       <Section padding="none" className="mb-24 relative overflow-hidden bg-white">
          <Container>
-            <div className="max-w-4xl py-20 lg:py-32">
+            <div className="max-w-4xl py-10 lg:py-16">
                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
                   <div className="inline-flex items-center gap-2 mb-8">
                     <div className="w-2 h-2 rounded-full bg-black animate-pulse" />

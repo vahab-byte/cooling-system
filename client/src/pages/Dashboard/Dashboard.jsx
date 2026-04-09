@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { bookingService, dashboardService } from '../../services/api';
-import { Calendar, Clock, MapPin, Tag, Loader2, AlertCircle, CheckCircle2, UserCircle2, Phone, Star, LayoutDashboard, History, CreditCard, ChevronRight, Settings } from 'lucide-react';
+import { bookingService, dashboardService, paymentService } from '../../services/api';
+import { Calendar, Clock, MapPin, Tag, Loader2, AlertCircle, CheckCircle2, UserCircle2, Phone, Star, LayoutDashboard, History, CreditCard, ChevronRight, Settings, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { loadRazorpay } from '../../components/common/RazorpayLoader';
+import { toast } from 'react-hot-toast';
 
 const STATUS_STAGES = ['pending', 'confirmed', 'assigned', 'en_route', 'in_progress', 'completed'];
 const STATUS_LABELS = {
@@ -24,24 +26,92 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('active');
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-      try {
-        const [bookingsData, overviewData] = await Promise.all([
-          bookingService.getUserBookings(user.id),
-          dashboardService.getUserOverview(user.id)
-        ]);
-        setBookings(bookingsData || []);
-        setOverview(overviewData || { totalSpent: 0, activeCount: 0 });
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch dashboard data.');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, [user]);
+
+  const fetchData = async () => {
+    if (!user) return;
+    try {
+      const [bookingsData, overviewData] = await Promise.all([
+        bookingService.getUserBookings(user.id),
+        dashboardService.getUserOverview(user.id)
+      ]);
+      setBookings(bookingsData || []);
+      setOverview(overviewData || { totalSpent: 0, activeCount: 0 });
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch dashboard data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePayment = async (booking) => {
+    const loadingToast = toast.loading('Initializing Secure Payment Protocol...');
+    try {
+      const res = await loadRazorpay();
+      if (!res) {
+        toast.error('Failed to load Payment SDK. Please check your connection.', { id: loadingToast });
+        return;
+      }
+
+      // 1. Create order on backend
+      const amount = booking.total_amount || booking.services.price_base;
+      const orderData = await paymentService.createOrder(booking.id, amount);
+      if (!orderData.success) throw new Error('Order creation failed');
+
+      // 2. Configure Razorpay
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "ArcticFresh",
+        description: `Service Payment: ${booking.services.title}`,
+        order_id: orderData.order_id,
+        handler: async (response) => {
+          const verifyToast = toast.loading('Verifying Payment Signature...', { id: loadingToast });
+          try {
+            // 3. Verify payment on backend
+            const verifyRes = await paymentService.verifyPayment({
+              ...response,
+              bookingId: booking.id,
+              amount: amount,
+              paymentMethod: 'razorpay' // Could be refined by checking response
+            });
+
+            if (verifyRes.success) {
+              toast.success('Payment Secured. Status Updated.', { id: verifyToast });
+              // Refresh data to reflect payment status
+              fetchData();
+            } else {
+              toast.error('Verification failed. Contact support.', { id: verifyToast });
+            }
+          } catch (err) {
+            console.error('Verification error:', err);
+            toast.error('Network error during verification.', { id: verifyToast });
+          }
+        },
+        prefill: {
+          name: user?.user_metadata?.full_name,
+          email: user?.email,
+        },
+        theme: {
+          color: "#020617", // Slate-950 to match brand
+        },
+        modal: {
+          ondismiss: () => {
+            toast.dismiss(loadingToast);
+          }
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (err) {
+      console.error('Payment error:', err);
+      toast.error('Could not initialize payment.', { id: loadingToast });
+    }
+  };
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
@@ -61,15 +131,15 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row relative">
       
-      {/* Tactical Sidebar Navigation */}
-      <aside className="lg:w-80 bg-white/80 backdrop-blur-3xl border-r border-slate-100 p-8 flex flex-col sticky top-0 h-screen pt-32 lg:pt-32 z-20">
-         <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 mb-8 ml-2">Main Protocol</div>
-         <div className="space-y-3">
+      {/* Minimalist Sidebar */}
+      <aside className="lg:w-72 bg-white border-r border-slate-100 p-8 flex flex-col sticky top-0 h-screen pt-32 z-20">
+         <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8 ml-2">Navigation</div>
+         <div className="space-y-2">
             {[
-              { id: 'active', label: 'Active Jobs', icon: LayoutDashboard },
-              { id: 'past', label: 'Service History', icon: History },
-              { id: 'billing', label: 'Billing Matrix', icon: CreditCard },
-              { id: 'settings', label: 'Profile Key', icon: Settings }
+              { id: 'active', label: 'Ongoing Services', icon: LayoutDashboard },
+              { id: 'past', label: 'History', icon: History },
+              { id: 'billing', label: 'Payments', icon: CreditCard },
+              { id: 'settings', label: 'Account', icon: Settings }
             ].map((btn) => {
               const Icon = btn.icon;
               const isActive = activeTab === btn.id;
@@ -77,75 +147,58 @@ const Dashboard = () => {
                 <button 
                   key={btn.id}
                   onClick={() => setActiveTab(btn.id)}
-                  className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all duration-500 group ${
+                  className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                     isActive 
-                    ? 'bg-slate-950 text-white shadow-2xl shadow-slate-950/20 translate-x-2' 
-                    : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-primary/5 text-primary shadow-sm' 
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
-                   <div className="flex items-center gap-4">
-                      <Icon size={18} className={isActive ? 'text-primary' : 'group-hover:text-primary'} />
-                      {btn.label}
-                   </div>
-                   {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+                   <Icon size={18} />
+                   {btn.label}
                 </button>
               );
             })}
          </div>
 
-         <div className="mt-auto group">
-            <div className="bg-slate-50 border border-slate-100 rounded-[2.5rem] p-8 relative overflow-hidden transition-all duration-700 hover:border-primary/30">
-               <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all" />
-               <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">System Secure</span>
-                  </div>
-                  <div className="font-black text-slate-900 text-sm mb-1 tracking-tight">ArcticFresh <span className="text-primary">PRO</span></div>
-                  <div className="text-[10px] font-medium text-slate-400 mb-6 leading-relaxed">Elite Priority Access Active. Operational 24/7.</div>
-                  <button className="w-full py-3 bg-white border border-slate-200 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-950 hover:text-white hover:border-slate-950 transition-all duration-500">Contact Control</button>
+         <div className="mt-auto">
+            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+               <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Elite Account</span>
                </div>
+               <div className="font-bold text-slate-900 text-sm mb-1">ArcticFresh PRO</div>
+               <div className="text-[11px] text-slate-400 mb-5 leading-relaxed">Priority status active.</div>
+               <button className="w-full py-2.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-[11px] font-bold hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Support Desk</button>
             </div>
          </div>
       </aside>
 
       <main className="flex-1 p-6 lg:p-12 pt-32 lg:pt-32 relative z-10">
-        {/* Tactical Header Stats */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16 relative">
+        {/* Elegant Dashboard Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-10 mb-12 relative">
            <div>
-              <div className="flex items-center gap-3 mb-3">
-                 <div className="w-8 h-[1px] bg-primary" />
-                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.5em]">Terminal Access</span>
+              <div className="flex items-center gap-2 mb-2">
+                 <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Dashboard Overview</span>
               </div>
-              <h1 className="text-5xl font-black text-slate-950 tracking-tighter mb-2">
-                {activeTab === 'active' && 'Current '}{activeTab === 'past' && 'Historic '}{activeTab === 'billing' && 'Financial '}{activeTab === 'settings' && 'Identity '}<span className="text-primary italic">Status.</span>
+              <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">
+                {activeTab === 'active' && 'Active '}{activeTab === 'past' && 'Service '}{activeTab === 'billing' && 'Billing '}{activeTab === 'settings' && 'Account '}<span className="text-primary">Overview</span>
               </h1>
-              <div className="flex items-center gap-4 text-slate-400">
-                 <p className="text-xs font-medium uppercase tracking-widest opacity-60">Authentication: <span className="text-slate-900 font-black">{user?.email}</span></p>
-                 <div className="w-1 h-1 rounded-full bg-slate-200" />
-                 <p className="text-xs font-medium uppercase tracking-widest opacity-60">System Mode: <span className="text-slate-900 font-black">Production</span></p>
-              </div>
+              <p className="text-sm text-slate-500 font-medium">Hello, {user?.user_metadata?.full_name || 'Valued Client'}. Welcome back to your ArcticFresh dashboard.</p>
            </div>
            
-           <div className="flex gap-10">
-              <div className="relative group">
-                 <div className="absolute -inset-4 bg-slate-50 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                 <div className="relative">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] block mb-2">Aggregate Value</span>
-                    <div className="flex items-baseline gap-1">
-                       <span className="text-xs font-black text-slate-400">₹</span>
-                       <span className="text-4xl font-black text-slate-950 tabular-nums tracking-tighter">{overview.totalSpent.toLocaleString()}</span>
-                    </div>
+           <div className="flex gap-16">
+              <div>
+                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">My Spending</span>
+                 <div className="flex items-baseline gap-1">
+                    <span className="text-sm font-bold text-slate-400">₹</span>
+                    <span className="text-3xl font-bold text-slate-900 tabular-nums">{overview.totalSpent.toLocaleString()}</span>
                  </div>
               </div>
-              <div className="relative group">
-                 <div className="absolute -inset-4 bg-primary/5 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                 <div className="relative">
-                    <span className="text-[9px] font-black text-primary/40 uppercase tracking-[0.3em] block mb-2">Queue Status</span>
-                    <div className="flex items-baseline gap-2">
-                       <span className="text-4xl font-black text-primary tabular-nums tracking-tighter">{overview.activeCount}</span>
-                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Missions</span>
-                    </div>
+              <div>
+                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Active Orders</span>
+                 <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-primary tabular-nums">{overview.activeCount}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current</span>
                  </div>
               </div>
            </div>
@@ -162,106 +215,169 @@ const Dashboard = () => {
           {activeTab === 'billing' ? (
              <motion.div 
                key="billing"
-               initial={{ opacity: 0, x: 20 }}
-               animate={{ opacity: 1, x: 0 }}
-               className="bg-white rounded-[3rem] p-12 border border-slate-100 shadow-premium"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="space-y-8"
              >
-                <div className="flex justify-between items-center mb-12">
-                   <div>
-                      <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">Ledger Protocol</div>
-                      <h3 className="text-2xl font-black text-slate-950 tracking-tight">Financial Records</h3>
+                {/* Wealth Protocol Hub - Redesigned for Luxury Arctic */}
+                <div className="grid md:grid-cols-2 gap-8">
+                   <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-700" />
+                      <div className="relative z-10">
+                         <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-primary border border-slate-100">
+                               <Sparkles size={18} />
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Total Investment</span>
+                         </div>
+                         <div className="flex items-baseline gap-2">
+                            <span className="text-sm font-bold text-slate-300">₹</span>
+                            <span className="text-5xl font-black text-slate-900 tabular-nums tracking-tighter">{overview.totalSpent.toLocaleString()}</span>
+                         </div>
+                         <p className="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50 inline-block px-3 py-1 rounded-full border border-slate-100">Verified Protocol Funds</p>
+                      </div>
                    </div>
-                   <button className="px-8 py-4 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-slate-950/20 hover:-translate-y-1 transition-all">Download Audit (.pdf)</button>
+
+                   <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl group-hover:bg-amber-500/10 transition-colors duration-700" />
+                      <div className="relative z-10">
+                         <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-amber-500 border border-slate-100">
+                               <CreditCard size={18} />
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Pending Dues</span>
+                         </div>
+                         <div className="flex items-baseline gap-2">
+                            <span className="text-sm font-bold text-slate-300">₹</span>
+                            <span className="text-5xl font-black text-slate-900 tabular-nums tracking-tighter">
+                               {bookings.filter(b => b.payment_status === 'unpaid' && b.status !== 'cancelled').reduce((acc, b) => acc + Number(b.total_amount || b.services?.price_base || 0), 0).toLocaleString()}
+                            </span>
+                         </div>
+                         <p className="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50 inline-block px-3 py-1 rounded-full border border-slate-100">Awaiting Secure Validation</p>
+                      </div>
+                   </div>
                 </div>
-                <div className="overflow-x-auto">
-                   <table className="w-full text-left">
-                      <thead>
-                         <tr className="border-b border-slate-50">
-                            <th className="pb-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Hash ID</th>
-                            <th className="pb-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Timestamp</th>
-                            <th className="pb-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Credit Value</th>
-                            <th className="pb-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Verification</th>
-                            <th className="pb-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 text-right">Gateway</th>
-                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                         {bookings.filter(b => b.status === 'completed' || b.status === 'confirmed').map(b => (
-                            <tr key={b.id} className="group hover:bg-slate-50/50 transition-colors">
-                               <td className="py-8 font-mono font-black text-xs text-slate-950">#INV-{b.id.slice(0,12).toUpperCase()}</td>
-                               <td className="py-8 text-xs font-black text-slate-400 uppercase font-mono">{new Date(b.booking_date).toLocaleDateString()}</td>
-                               <td className="py-8 text-xs font-black text-slate-900 font-mono">₹{Number(b.total_amount).toLocaleString()}</td>
-                               <td className="py-8">
-                                  <span className="px-4 py-1.5 bg-emerald-50 text-emerald-500 text-[9px] font-black uppercase tracking-widest rounded-lg border border-emerald-100 flex items-center gap-2 w-fit">
-                                     <div className="w-1 h-1 rounded-full bg-emerald-500" /> Verified
-                                  </span>
-                               </td>
-                               <td className="py-8 text-right">
-                                  <button className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-500">
-                                     <CreditCard size={18} />
-                                  </button>
-                               </td>
+
+                <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm overflow-hidden">
+                   <div className="flex justify-between items-center mb-10 px-2">
+                      <div>
+                         <h3 className="text-xl font-bold text-slate-900 tracking-tight">Billing Protocol Hub</h3>
+                         <p className="text-sm text-slate-500 font-medium">Verify your financial history and secure pending service payments.</p>
+                      </div>
+                      <button className="px-6 py-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Download Statement</button>
+                   </div>
+                   <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                         <thead>
+                            <tr className="border-b border-slate-50 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                               <th className="pb-8 pl-4">Protocol ID</th>
+                               <th className="pb-8">Scheduled Date</th>
+                               <th className="pb-8">Amount</th>
+                               <th className="pb-8">Payment Status</th>
+                               <th className="pb-8 text-right pr-4">Secure Action</th>
                             </tr>
-                         ))}
-                         {bookings.length === 0 && (
-                            <tr>
-                               <td colSpan="5" className="py-32 text-center text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">No data packets found in this sector.</td>
-                            </tr>
-                         )}
-                      </tbody>
-                   </table>
+                         </thead>
+                         <tbody className="divide-y divide-slate-50 text-sm">
+                            {bookings.filter(b => b.status !== 'cancelled').map(b => (
+                               <tr key={b.id} className="group hover:bg-slate-50/50 transition-colors">
+                                  <td className="py-8 pl-4 font-bold text-slate-900">
+                                     <div className="flex flex-col">
+                                        <span>#AF-{b.id.slice(0,8).toUpperCase()}</span>
+                                        <span className="text-[10px] text-slate-400 uppercase tracking-widest">{b.services?.title}</span>
+                                     </div>
+                                  </td>
+                                  <td className="py-8 font-medium text-slate-500">{new Date(b.booking_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                                  <td className="py-8 font-black text-slate-900 tracking-tight">₹{Number(b.total_amount || b.services?.price_base || 0).toLocaleString()}</td>
+                                  <td className="py-8">
+                                     {b.payment_status === 'paid' ? (
+                                        <div className="flex items-center gap-2">
+                                           <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
+                                           <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Verified</span>
+                                        </div>
+                                     ) : (
+                                        <div className="flex items-center gap-2">
+                                           <div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.4)]" />
+                                           <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Pending Dues</span>
+                                        </div>
+                                     )}
+                                  </td>
+                                  <td className="py-8 text-right pr-4">
+                                     {b.payment_status === 'unpaid' ? (
+                                        <button 
+                                          onClick={() => handlePayment(b)}
+                                          className="px-5 py-2.5 bg-slate-950 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all shadow-lg shadow-slate-950/10 active:scale-95 flex items-center gap-2 ml-auto"
+                                        >
+                                           <CreditCard size={12} />
+                                           Pay Now
+                                        </button>
+                                     ) : (
+                                        <button className="p-2.5 text-slate-300 hover:text-primary transition-colors bg-slate-50 rounded-lg">
+                                           <ChevronRight size={16} />
+                                        </button>
+                                     )}
+                                  </td>
+                               </tr>
+                            ))}
+                            {bookings.length === 0 && (
+                               <tr>
+                                  <td colSpan="5" className="py-24 text-center">
+                                     <div className="flex flex-col items-center opacity-30">
+                                        <CreditCard size={48} className="mb-4" />
+                                        <p className="font-bold text-[10px] uppercase tracking-[0.2em]">Zero Financial Logs Found</p>
+                                     </div>
+                                  </td>
+                               </tr>
+                            )}
+                         </tbody>
+                      </table>
+                   </div>
                 </div>
              </motion.div>
           ) : activeTab === 'settings' ? (
              <motion.div 
                key="settings"
-               initial={{ opacity: 0, x: 20 }}
-               animate={{ opacity: 1, x: 0 }}
-               className="grid lg:grid-cols-3 gap-12"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="grid lg:grid-cols-3 gap-8"
              >
-                <div className="lg:col-span-2 space-y-10">
-                   <div className="bg-white rounded-[3rem] p-12 border border-slate-100 shadow-premium relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-                      <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4">Identity Core</div>
-                      <h3 className="text-2xl font-black text-slate-950 tracking-tight mb-10">Operational Access Keys</h3>
-                      <div className="space-y-8 relative z-10">
-                         <div className="grid md:grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                               <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Codename</label>
-                               <div className="bg-slate-50 border border-slate-100 rounded-2xl px-6 py-5 text-xs font-black text-slate-900 font-mono flex items-center gap-3">
+                <div className="lg:col-span-2">
+                   <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm h-full">
+                      <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-8">Personal Information</h3>
+                      <div className="space-y-6">
+                         <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Full Name</label>
+                               <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 flex items-center gap-3">
                                   <UserCircle2 size={16} className="text-primary" />
-                                  {user?.user_metadata?.full_name || 'ANONYMOUS'}
+                                  {user?.user_metadata?.full_name || 'Anonymous User'}
                                </div>
                             </div>
-                            <div className="space-y-3">
-                               <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Secure Link (Phone)</label>
-                               <input type="text" placeholder="+91 XXX XXX XXXX" className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-5 text-xs font-black outline-none focus:border-primary focus:bg-white transition-all font-mono" />
+                            <div className="space-y-2">
+                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Phone Number</label>
+                               <input type="text" placeholder="Not provided" className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-primary focus:bg-white transition-all" />
                             </div>
                          </div>
-                         <div className="space-y-3">
-                            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Verification Email</label>
-                            <div className="bg-slate-50/50 border border-slate-100 rounded-2xl px-6 py-5 text-xs font-black text-slate-400 font-mono opacity-60">
+                         <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Email Address</label>
+                            <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-medium text-slate-500">
                                {user?.email}
                             </div>
                          </div>
-                         <button className="px-12 py-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-primary/30 hover:-translate-y-2 transition-all duration-500">Rotate Access Keys</button>
+                         <button className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all">Update Profile</button>
                       </div>
                    </div>
                 </div>
-                <div className="space-y-10">
-                   <div className="bg-slate-950 rounded-[3rem] p-10 text-white relative overflow-hidden h-full">
-                      <div className="absolute top-0 right-0 w-48 h-48 bg-primary/20 rounded-full blur-[80px]" />
-                      <div className="relative z-10 flex flex-col h-full">
-                         <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mb-10 border border-white/10 group hover:border-primary transition-all duration-700">
-                            <Star className="text-primary group-hover:scale-125 transition-transform duration-700" size={36} />
-                         </div>
-                         <div className="text-[10px] font-black uppercase tracking-[0.5em] text-primary mb-2">Service Era</div>
-                         <h4 className="text-3xl font-black mb-4 tracking-tighter">Established</h4>
-                         <p className="text-slate-400 text-sm mb-auto font-medium uppercase tracking-widest leading-relaxed">{new Date(user?.created_at).toLocaleDateString(undefined, {month: 'long', year: 'numeric'})}</p>
-                         
-                         <div className="mt-12 p-6 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-5 group hover:bg-white/10 transition-colors">
-                            <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse ring-8 ring-emerald-500/10" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em]">Active Duty Phase</span>
-                         </div>
+                <div>
+                   <div className="bg-slate-900 rounded-3xl p-8 text-white h-full flex flex-col">
+                      <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
+                         <Star className="text-primary" size={24} />
+                      </div>
+                      <h4 className="text-xl font-bold mb-2">Member Since</h4>
+                      <p className="text-slate-400 text-sm mb-auto">{new Date(user?.created_at).toLocaleDateString(undefined, {month: 'long', year: 'numeric'})}</p>
+                      
+                      <div className="mt-8 p-4 bg-white/5 border border-white/10 rounded-xl flex items-center gap-3">
+                         <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                         <span className="text-[10px] font-bold uppercase tracking-wider">Account Active</span>
                       </div>
                    </div>
                 </div>
@@ -270,23 +386,16 @@ const Dashboard = () => {
             (activeTab === 'active' ? activeBookings : pastBookings).length === 0 ? (
               <motion.div 
                 key="empty"
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white/50 backdrop-blur-3xl rounded-[3rem] p-32 text-center border-2 border-dashed border-slate-100 relative overflow-hidden"
+                className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-slate-100 flex flex-col items-center"
               >
-                {/* Radar Animation */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-                   <div className="w-64 h-64 border border-primary rounded-full animate-ping" />
-                   <div className="w-96 h-96 border border-primary rounded-full animate-[ping_3s_linear_infinite]" />
-                </div>
-                <div className="relative z-10">
-                   <div className="w-24 h-24 bg-slate-900 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                     <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                   </div>
-                   <h3 className="text-3xl font-black text-slate-950 mb-3 tracking-tighter">Scanning Status...</h3>
-                   <p className="text-slate-400 font-medium mb-12 max-w-sm mx-auto uppercase text-[10px] tracking-[0.3em] leading-relaxed">No active mission protocols detected in the current sector.</p>
-                   <a href="/services" className="inline-flex items-center gap-3 px-10 py-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-primary/40 hover:-translate-y-1 transition-all">Initiate Service Protocol</a>
-                </div>
+                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                   <LayoutDashboard size={32} className="text-slate-300" />
+                 </div>
+                 <h3 className="text-xl font-bold text-slate-900 mb-2">No Bookings Found</h3>
+                 <p className="text-slate-500 text-sm mb-8 max-w-xs mx-auto">It looks like you haven't scheduled any services yet. Start your first protocol today!</p>
+                 <a href="/services" className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all">Browse Services</a>
               </motion.div>
             ) : (
               <motion.div 
@@ -303,141 +412,116 @@ const Dashboard = () => {
                   return (
                     <motion.div 
                       key={booking.id}
-                      initial={{ opacity: 0, y: 30 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: bIdx * 0.1 }}
-                      className="bg-white rounded-[3rem] p-12 border border-slate-100 shadow-premium group hover:border-primary/20 transition-all duration-700 relative overflow-hidden"
+                      className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
                     >
-                      <div className="absolute top-0 right-0 p-8">
-                         <div className="bg-slate-50 px-6 py-2.5 rounded-xl border border-slate-100">
-                            <span className="text-[10px] font-mono font-black text-slate-400 uppercase tracking-widest">ID: {booking.id.slice(0, 12).toUpperCase()}</span>
-                         </div>
-                      </div>
-
-                      <div className="flex flex-col xl:flex-row gap-16">
+                      <div className="flex flex-col lg:flex-row gap-10">
                         
-                        {/* Dossier Content */}
+                        {/* Service Info */}
                         <div className="flex-1">
-                          <div className="flex items-center gap-8 mb-12">
-                             <div className="w-24 h-24 rounded-[2.5rem] bg-slate-950 flex items-center justify-center text-primary shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative group-hover:scale-105 transition-transform duration-700">
-                                <div className="absolute inset-0 bg-primary/20 rounded-[2.5rem] animate-pulse" />
-                                <Tag size={40} className="relative z-10" />
-                             </div>
-                             <div>
-                                <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em] mb-2">Service Classification</div>
-                                <h3 className="text-4xl font-black text-slate-950 tracking-tighter mb-2 group-hover:text-primary transition-colors">{booking.services?.title}</h3>
-                                <div className="flex items-center gap-3">
-                                   <div className="w-2 h-[1px] bg-primary" />
-                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{booking.services?.category} Division</span>
-                                </div>
-                             </div>
+                          <div className="flex items-start justify-between mb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary">
+                                <Tag size={28} />
+                              </div>
+                              <div>
+                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">{booking.services?.title}</h3>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{booking.services?.category}</p>
+                              </div>
+                            </div>
+                            <div className="bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
+                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Order #{booking.id.slice(0, 8).toUpperCase()}</span>
+                            </div>
                           </div>
 
-                          <div className="grid sm:grid-cols-2 gap-8">
-                             <div className="p-10 rounded-[3rem] bg-slate-50 border border-slate-100 flex items-center gap-8 group/item hover:bg-white hover:shadow-2xl transition-all duration-500">
-                                <div className="w-14 h-14 rounded-2xl bg-white shadow-lg flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-all duration-500">
-                                   <Calendar size={24} />
+                          <div className="grid sm:grid-cols-2 gap-4">
+                             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
+                                   <Calendar size={18} />
                                 </div>
                                 <div>
-                                   <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-2">Launch Window</div>
-                                   <div className="text-sm font-black text-slate-900 font-mono uppercase tracking-tighter">
-                                     {new Date(booking.booking_date).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}).toUpperCase()}
-                                     <span className="block text-primary mt-1">{new Date(booking.booking_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})} HRS</span>
+                                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Scheduled Date</div>
+                                   <div className="text-sm font-bold text-slate-900">
+                                     {new Date(booking.booking_date).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})}
+                                     <span className="ml-2 text-primary">{new Date(booking.booking_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                    </div>
                                 </div>
                              </div>
-                             <div className="p-10 rounded-[3rem] bg-slate-50 border border-slate-100 flex items-center gap-8 group/item hover:bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden">
-                                <div className="w-14 h-14 rounded-2xl bg-white shadow-lg flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-all duration-500">
-                                   <MapPin size={24} />
+                             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
+                                   <MapPin size={18} />
                                 </div>
                                 <div className="truncate">
-                                   <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-2">Vector (Location)</div>
-                                   <div className="text-sm font-black text-slate-900 truncate font-mono uppercase tracking-tighter">{booking.address}</div>
+                                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Location</div>
+                                   <div className="text-sm font-bold text-slate-900 truncate">{booking.address}</div>
                                 </div>
                              </div>
                           </div>
                         </div>
 
-                        {/* Tactical HUD Column */}
-                        <div className="flex-1 lg:max-w-md space-y-12">
-                           
-                           {/* Expert Attribution */}
-                           {technician ? (
-                              <div className="bg-slate-950 rounded-[3rem] p-6 pr-12 shadow-2xl relative overflow-hidden group/tech">
-                                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-[80px] group-hover:bg-primary/20 transition-all" />
-                                 <div className="flex items-center gap-8 relative z-10">
-                                    <div className="w-24 h-24 rounded-[2rem] bg-white/5 overflow-hidden border border-white/10 p-1.5 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all duration-700">
+                        {/* Status & Tech Info */}
+                        <div className="lg:w-80 flex flex-col gap-6">
+                           <div className="flex-1 flex flex-col justify-center">
+                              {technician ? (
+                                 <div className="flex items-center gap-4 p-4 bg-slate-900 rounded-2xl text-white">
+                                    <div className="w-12 h-12 rounded-xl bg-white/10 overflow-hidden">
                                       {technician.avatar_url ? (
-                                        <img src={technician.avatar_url} alt={technician.name} className="w-full h-full object-cover rounded-[1.6rem]" />
+                                        <img src={technician.avatar_url} alt={technician.name} className="w-full h-full object-cover" />
                                       ) : (
-                                        <UserCircle2 size={56} className="text-white/10" />
+                                        <div className="w-full h-full flex items-center justify-center"><UserCircle2 size={24} className="text-white/20" /></div>
                                       )}
                                     </div>
-                                    <div className="flex-1">
-                                       <div className="flex items-center gap-3 mb-2">
-                                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-                                          <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Expert On-Grid</span>
-                                       </div>
-                                       <h4 className="font-black text-white text-2xl tracking-tighter mb-4">{technician.name}</h4>
-                                       <div className="flex items-center gap-8">
-                                          <div className="flex items-center gap-2 text-[10px] font-black text-white/40">
-                                             <Star size={14} className="text-primary" fill="currentColor" /> {technician.rating || '4.9'}
-                                          </div>
-                                          <a href={`tel:${technician.phone}`} className="px-6 py-2 bg-white/10 hover:bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-500">
-                                             Comm Link
-                                          </a>
-                                       </div>
+                                    <div className="flex-1 min-w-0">
+                                       <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-0.5 whitespace-nowrap">Assigned Expert</div>
+                                       <h4 className="font-bold text-sm truncate">{technician.name}</h4>
                                     </div>
+                                    <a href={`tel:${technician.phone}`} className="w-10 h-10 bg-white/10 hover:bg-primary rounded-xl flex items-center justify-center transition-colors">
+                                       <Phone size={16} />
+                                    </a>
                                  </div>
-                              </div>
-                           ) : (
-                              <div className="bg-slate-50 border border-slate-100 rounded-[3rem] p-12 flex flex-col items-center justify-center text-center">
-                                 <div className="w-16 h-16 bg-white rounded-3xl shadow-xl flex items-center justify-center mb-6 relative hover:scale-110 transition-transform">
-                                    <div className="absolute inset-0 border-2 border-primary/20 border-t-primary rounded-3xl animate-spin" />
-                                    <Clock size={28} className="text-primary/40" />
+                              ) : (
+                                 <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                                       <Clock size={20} className="text-primary/40 animate-pulse" />
+                                    </div>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Matching Professional...</p>
                                  </div>
-                                 <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] leading-relaxed">Scanning Network for Optimal Professional Intelligence...</p>
-                              </div>
-                           )}
+                              )}
+                           </div>
 
-                           {/* Status Pipeline Protocol */}
                            {!isCancelled && (
-                              <div className="relative pt-8 px-2">
-                                 <div className="flex justify-between items-center mb-8">
-                                    <div className="flex items-center gap-3">
-                                       <div className="w-4 h-[1px] bg-slate-200" />
-                                       <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">Operational Phase</span>
-                                    </div>
-                                    <span className="text-[11px] font-black text-primary uppercase tracking-[0.4em] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">{STATUS_LABELS[booking.status]}</span>
+                              <div className="space-y-3">
+                                 <div className="flex justify-between items-center px-1">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Status</span>
+                                    <span className="text-[11px] font-bold text-primary uppercase tracking-wider">{STATUS_LABELS[booking.status]}</span>
                                  </div>
-                                 
-                                 <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden mb-12 shadow-inner">
+                                 <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                     <div 
-                                      className="absolute top-0 left-0 h-full bg-primary glow-pulse transition-all duration-1000 ease-in-out"
+                                      className="h-full bg-primary transition-all duration-1000 ease-in-out"
                                       style={{ width: `${((currentStageIndex + 1) / STATUS_STAGES.length) * 100}%` }}
                                     />
                                  </div>
-
-                                 <div className="flex justify-between relative">
-                                   {STATUS_STAGES.map((stage, index) => {
-                                     const isCompleted = index <= currentStageIndex;
-                                     const isActive = index === currentStageIndex;
-                                     
-                                     return (
-                                       <div key={stage} className="relative group">
-                                          <div className={`w-4 h-4 rounded-full transition-all duration-700 cursor-help ${
-                                            isActive ? 'bg-primary scale-[1.8] ring-8 ring-primary/10 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : 
-                                            isCompleted ? 'bg-slate-950 scale-110' : 'bg-slate-200'
-                                          }`} />
-                                          <div className={`absolute top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none whitespace-nowrap bg-slate-950 text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2.5 rounded-xl z-30 shadow-2xl`}>
-                                             {STATUS_LABELS[stage]}
-                                          </div>
-                                       </div>
-                                     );
-                                   })}
-                                 </div>
                               </div>
                            )}
+
+                           {booking.payment_status === 'unpaid' && !isCancelled && (
+                              <button 
+                                onClick={() => handlePayment(booking)}
+                                className="w-full py-4 bg-slate-950 text-white rounded-2xl text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-xl shadow-slate-950/10 active:scale-[0.98] flex items-center justify-center gap-2 group"
+                              >
+                                <Sparkles size={14} className="text-primary group-hover:text-white transition-colors" />
+                                Secure Payment
+                              </button>
+                            )}
+
+                            {booking.payment_status === 'paid' && (
+                              <div className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl text-[11px] font-bold uppercase tracking-[0.2em] border border-emerald-100 flex items-center justify-center gap-2">
+                                <CheckCircle2 size={14} />
+                                Protocol Paid
+                              </div>
+                            )}
                         </div>
 
                       </div>

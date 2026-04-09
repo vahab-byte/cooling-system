@@ -22,6 +22,10 @@ const PrivateRoute = ({ children }) => {
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Auth Pages (No Header/Footer) */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+
       {/* Public Pages with MainLayout (Full Footer) */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
@@ -30,8 +34,6 @@ const AppRoutes = () => {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
       </Route>
 
       {/* Dashboard with DashboardLayout (No Full Footer) */}

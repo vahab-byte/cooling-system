@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api/v1'
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1'
 });
 
 // Add an interceptor to insert the JWT token if available
@@ -137,6 +137,23 @@ export const dashboardService = {
   getUserOverview: async (userId) => {
     const { data } = await api.get(`/dashboard/user-overview/${userId}`);
     return data.data;
+  }
+};
+
+export const paymentService = {
+  async createOrder(bookingId, amount) {
+    const { data } = await api.post('/payment/create-order', { bookingId, amount });
+    return data;
+  },
+
+  async verifyPayment(paymentData) {
+    const { data } = await api.post('/payment/verify', paymentData);
+    return data;
+  },
+
+  async getPaymentDetails(bookingId) {
+    const { data } = await api.get(`/payment/${bookingId}`);
+    return data.payment;
   }
 };
 

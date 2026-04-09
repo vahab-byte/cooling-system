@@ -14,7 +14,15 @@ const app = express();
 
 // Security and utility middleware
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5174' }));
+app.use(cors({ 
+  origin: [
+    process.env.CLIENT_URL, 
+    'http://localhost:5173', 
+    'http://localhost:5174',
+    'http://localhost:3001'
+  ].filter(Boolean),
+  credentials: true
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -38,6 +46,7 @@ import testimonialRoutes from './routes/testimonialRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import sparePartsRoutes from './routes/sparePartsRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 // Mount all routes under /api/v1
 app.use('/api/v1/auth', authRoutes);
@@ -51,6 +60,7 @@ app.use('/api/v1/testimonials', testimonialRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/spare-parts', sparePartsRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/payment', paymentRoutes);
 
 // Legacy route support (keep /api/* working for existing frontend)
 app.use('/api/auth', authRoutes);

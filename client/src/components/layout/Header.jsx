@@ -87,10 +87,10 @@ const Header = () => {
               ) : (
                 <div className="flex items-center gap-6">
                   <Link to="/login" className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-black transition-colors">
-                    Access Terminal
+                    Login / Sign up
                   </Link>
-                  <Button variant="outline" className="text-[10px] py-2 px-6" onClick={() => window.location.href = '/services'}>
-                    Protocol Start
+                  <Button variant="outline" className="text-[10px] py-2 px-6 rounded-xl" onClick={() => window.location.href = '/services'}>
+                    Get Started
                   </Button>
                 </div>
               )
@@ -150,7 +150,7 @@ const Header = () => {
                 ) : (
                   <>
                     <Link to="/login" className="text-center text-sm font-medium text-neutral-500 py-2">
-                      Sign In
+                      Login / Sign up
                     </Link>
                     <Button className="w-full" onClick={() => window.location.href = '/services'}>
                       Get Started
