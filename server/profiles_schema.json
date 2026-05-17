@@ -1,0 +1,34 @@
+[
+  {
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "column_name": "full_name",
+    "data_type": "text"
+  },
+  {
+    "column_name": "phone",
+    "data_type": "text"
+  },
+  {
+    "column_name": "avatar_url",
+    "data_type": "text"
+  },
+  {
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "column_name": "email",
+    "data_type": "text"
+  },
+  {
+    "column_name": "password_hash",
+    "data_type": "text"
+  },
+  {
+    "column_name": "role",
+    "data_type": "text"
+  }
+]

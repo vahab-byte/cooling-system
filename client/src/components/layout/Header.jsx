@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
 import Container from '../ui/Container';
+import ThemeToggle from '../common/ThemeToggle';
 
 const Header = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -26,8 +27,10 @@ const Header = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
     { name: 'Services', path: '/services' },
     { name: 'Pricing', path: '/pricing' },
+    { name: 'Blog', path: '/blog' },
     { name: 'Contact', path: '/contact' }
   ];
 
@@ -68,7 +71,8 @@ const Header = () => {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-4">
+            <ThemeToggle />
             {!authLoading && (
               user ? (
                 <>

@@ -2,12 +2,12 @@ import db from '../config/db.js';
 
 export const submitContact = async (req, res, next) => {
   try {
-    const { name, email, phone, message } = req.body;
+    const { name, email, phone, message, subject } = req.body;
 
     const result = await db.query(
-      `INSERT INTO contacts (name, email, phone, message) 
+      `INSERT INTO contact_messages (name, email, subject, message) 
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [name, email, phone, message]
+      [name, email, subject || `Message from ${name}`, message]
     );
 
     res.status(201).json({
@@ -22,7 +22,7 @@ export const submitContact = async (req, res, next) => {
 
 export const getContacts = async (req, res, next) => {
   try {
-    const result = await db.query('SELECT * FROM contacts ORDER BY created_at DESC');
+    const result = await db.query('SELECT * FROM contact_messages ORDER BY created_at DESC');
     res.status(200).json({
       success: true,
       count: result.rows.length,

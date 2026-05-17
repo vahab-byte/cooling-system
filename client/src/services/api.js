@@ -157,4 +157,52 @@ export const paymentService = {
   }
 };
 
+export const blogService = {
+  async getPosts(params = {}) {
+    const { data } = await api.get('/blog', { params });
+    return data;
+  },
+
+  async getPostBySlug(slug) {
+    const { data } = await api.get(`/blog/${slug}`);
+    return data.data;
+  },
+
+  async getCategories() {
+    const { data } = await api.get('/blog/categories');
+    return data.data;
+  },
+
+  async createPost(postData) {
+    const { data } = await api.post('/blog', postData);
+    return data.data;
+  },
+
+  async updatePost(id, postData) {
+    const { data } = await api.put(`/blog/${id}`, postData);
+    return data.data;
+  },
+
+  async deletePost(id) {
+    const { data } = await api.delete(`/blog/${id}`);
+    return data;
+  }
+};
+
+// Response interceptor for global error handling
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      // Auto-logout on 401
+      localStorage.removeItem('arcticfresh_token');
+      localStorage.removeItem('arcticfresh_user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

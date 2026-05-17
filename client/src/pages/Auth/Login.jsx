@@ -21,7 +21,7 @@ const Login = () => {
       toast.success('Welcome back!');
       navigate('/');
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.error || error.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ const Login = () => {
             <div className="pt-4">
               <button 
                 disabled={loading}
-                className="w-full bg-primary hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(59,130,246,0.3)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.5)] transition-all flex justify-center items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(59,130,246,0.3)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.5)] transition-all flex justify-center items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="animate-spin" /> : <>Sign In <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>}
               </button>
@@ -116,7 +116,7 @@ const Login = () => {
           </form>
 
           <div className="mt-10 text-center text-slate-500 font-medium">
-            Don't have an account? <Link to="/signup" className="text-primary font-bold hover:text-blue-700 transition-colors ml-1">Sign up for free</Link>
+            Don't have an account? <Link to="/signup" className="text-blue-600 font-bold hover:text-blue-800 transition-colors ml-1">Sign up for free</Link>
           </div>
         </motion.div>
       </div>

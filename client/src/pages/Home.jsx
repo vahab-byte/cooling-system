@@ -6,10 +6,12 @@ import ServiceProcess from '../components/sections/ServiceProcess';
 import BookingSection from '../components/sections/BookingSection';
 import Testimonials from '../components/sections/Testimonials';
 import FAQ from '../components/sections/FAQ';
+import SEO from '../components/common/SEO';
 
 const Home = () => {
   return (
     <div className="bg-white">
+      <SEO path="/" />
       <Hero />
       <Services />
       <WhyChooseUs />

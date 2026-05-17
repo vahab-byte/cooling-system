@@ -5,6 +5,7 @@ import { contactService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import Section from '../components/ui/Section';
 import Container from '../components/ui/Container';
+import SEO from '../components/common/SEO';
 
 const ContactPage = () => {
   const [loading, setLoading] = React.useState(false);
@@ -39,6 +40,7 @@ const ContactPage = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-24 pb-24 bg-white selection:bg-primary/10">
+      <SEO title="Contact Us" description="Get in touch with ArcticFresh. 24/7 emergency support, free consultations, and expert AC service in Ahmedabad." path="/contact" />
       <Container>
 
         {/* Refined Hero Section */}

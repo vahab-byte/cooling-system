@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './config/swagger.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -10,28 +11,84 @@ import { errorHandler } from './middleware/errorHandler.js';
 // Load env vars
 dotenv.config();
 
+// Validate required env vars (warn but don't crash — allow server to start for health checks)
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
+const missingVars = requiredEnvVars.filter(v => !process.env[v]);
+if (missingVars.length > 0) {
+  console.error(`⚠️  WARNING: Missing environment variables: ${missingVars.join(', ')}`);
+  console.error('   Database-dependent routes will fail until these are set.');
+  // Don't exit — let server start so health check and static routes work
+}
+
 const app = express();
 
+// Rate Limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // Strict: 10 auth attempts per 15 min
+  message: { success: false, message: 'Too many authentication attempts. Please wait 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Security and utility middleware
+app.use(globalLimiter);
 app.use(helmet());
+
+// Dynamic CORS — supports Render auto-generated URLs and custom domains
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3001',
+].filter(Boolean);
+
 app.use(cors({ 
-  origin: [
-    process.env.CLIENT_URL, 
-    'http://localhost:5173', 
-    'http://localhost:5174',
-    'http://localhost:3001'
-  ].filter(Boolean),
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow any Render URL or listed origins
+    if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    callback(null, false);
+  },
   credentials: true
 }));
-app.use(express.json());
-app.use(morgan('dev'));
+app.use(express.json({ limit: '10mb' }));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ success: true, message: 'Server is running', timestamp: new Date().toISOString() });
+// Health check (includes optional DB connectivity test)
+app.get('/api/health', async (req, res) => {
+  const health = {
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+  };
+
+  // Optional: test DB connection
+  try {
+    const { default: db } = await import('./config/db.js');
+    await db.query('SELECT 1');
+    health.database = 'connected';
+  } catch (err) {
+    health.database = 'disconnected';
+    health.dbError = err.message;
+  }
+
+  res.status(200).json(health);
 });
 
 // Import routes
@@ -47,9 +104,10 @@ import adminRoutes from './routes/adminRoutes.js';
 import sparePartsRoutes from './routes/sparePartsRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import blogRoutes from './routes/blogRoutes.js';
 
 // Mount all routes under /api/v1
-app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/services', serviceRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/technicians', technicianRoutes);
@@ -61,9 +119,10 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/spare-parts', sparePartsRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/blog', blogRoutes);
 
 // Legacy route support (keep /api/* working for existing frontend)
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/technicians', technicianRoutes);
@@ -78,6 +137,9 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-  console.log(`API v1: http://localhost:${PORT}/api/v1`);
+  console.log(`\n🚀 ArcticFresh Server`);
+  console.log(`   Mode: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`   Port: ${PORT}`);
+  console.log(`   API:  http://localhost:${PORT}/api/v1`);
+  console.log(`   Docs: http://localhost:${PORT}/api-docs\n`);
 });

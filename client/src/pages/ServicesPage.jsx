@@ -5,10 +5,12 @@ import { Wind, ShieldCheck, Zap, ArrowRight, Play, Sparkles, CheckCircle2 } from
 import { Link } from 'react-router-dom';
 import Section from '../components/ui/Section';
 import Container from '../components/ui/Container';
+import SEO from '../components/common/SEO';
 
 const ServicesPage = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-24 pb-24 bg-white">
+      <SEO title="Services" description="Professional AC repair, installation, deep cleaning, gas refill, and AMC services in Ahmedabad. Certified technicians with 30-day warranty." path="/services" />
       
       {/* Services Hero */}
       <Section padding="none" className="mb-24 relative overflow-hidden bg-white">

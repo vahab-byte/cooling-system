@@ -6,18 +6,54 @@ import PricingCalculator from '../components/sections/PricingCalculator';
 import { pricingService } from '../services/api';
 import Section from '../components/ui/Section';
 import Container from '../components/ui/Container';
+import SEO from '../components/common/SEO';
 
 const PricingPage = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fallback pricing plans when API is unavailable
+  const fallbackPlans = [
+    {
+      name: 'Basic Care',
+      type: 'home',
+      price: 1999,
+      period: '/yr',
+      description: 'Perfect for single-room cooling maintenance.',
+      features: ['2 Wet Services', 'Unlimited Breakdowns', '10% Off Spare Parts', 'Priority Search', 'Basic Diagnostics'],
+      is_featured: false,
+      is_popular: false,
+    },
+    {
+      name: 'Premium Shield',
+      type: 'home',
+      price: 3499,
+      period: '/yr',
+      description: 'Our most popular comprehensive protection.',
+      features: ['3 Wet Services', 'Free Gas Charging', '20% Off Spare Parts', '2-Hr Response Time', 'Priority Support'],
+      is_featured: true,
+      is_popular: true,
+    },
+    {
+      name: 'Business Pro',
+      type: 'commercial',
+      price: 0,
+      period: '',
+      description: 'Scalable solutions for corporate offices.',
+      features: ['Monthly Maintenance', 'Dedicated Account Manager', 'Free Spare Parts', 'Bulk AC Management', 'Custom SLA'],
+      is_featured: false,
+      is_popular: false,
+    },
+  ];
+
   useEffect(() => {
     const fetchPlans = async () => {
       try {
         const data = await pricingService.getPlans();
-        setPlans(data);
+        setPlans(data && data.length > 0 ? data : fallbackPlans);
       } catch (error) {
         console.error('Failed to fetch pricing plans:', error);
+        setPlans(fallbackPlans);
       } finally {
         setLoading(false);
       }
@@ -27,6 +63,7 @@ const PricingPage = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-24 pb-24 bg-white selection:bg-primary/10">
+      <SEO title="Pricing & AMC Plans" description="Transparent pricing for AC services. AMC plans from ₹2,499/year. Free inspection, upfront costs, 30-day warranty." path="/pricing" />
       
       {/* Refined Hero Section */}
       <Section padding="none" className="mb-24 relative overflow-hidden">

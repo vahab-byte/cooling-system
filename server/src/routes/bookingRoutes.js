@@ -9,7 +9,7 @@ import {
   updateBooking, 
   deleteBooking 
 } from '../controllers/bookingController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, requireRole } from '../middleware/authMiddleware.js';
 import { validate, createBookingSchema, estimateSchema, bookServiceSchema } from '../middleware/validate.js';
 
 const router = express.Router();
@@ -18,10 +18,10 @@ const router = express.Router();
 router.post('/estimate', validate(estimateSchema), estimatePrice);
 router.post('/book-service', validate(bookServiceSchema), bookService);
 
-// Admin Routes
-router.get('/admin/all', getAllBookings);
-router.patch('/admin/:id', updateBooking);
-router.delete('/admin/:id', deleteBooking);
+// Admin Routes (NOW PROTECTED)
+router.get('/admin/all', protect, requireRole('admin'), getAllBookings);
+router.patch('/admin/:id', protect, requireRole('admin'), updateBooking);
+router.delete('/admin/:id', protect, requireRole('admin'), deleteBooking);
 
 // Create new booking (Protected)
 router.post('/', protect, validate(createBookingSchema), createBooking);

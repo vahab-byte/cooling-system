@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { ShieldCheck, Award, ThumbsUp, Users, History, CheckCircle2, Trophy, Star, Sparkles, Wind } from 'lucide-react';
 import Section from '../components/ui/Section';
 import Container from '../components/ui/Container';
+import SEO from '../components/common/SEO';
 
 const About = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 pb-24 bg-white">
+      <SEO title="About Us" description="ArcticFresh: 12+ years of premium AC service excellence in Ahmedabad. 1,250+ installations, certified technicians, and a commitment to precision cooling." path="/about" />
       <Container>
         
         {/* Story Section */}

@@ -87,8 +87,8 @@ const Footer = () => {
                 © 2026 ARCTICFRESH <span className="mx-2 text-slate-200">|</span> Ahmedabad, India
               </div>
               <div className="flex gap-6 text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                <Link to="#" className="hover:text-slate-950 transition-colors">Privacy Policy</Link>
-                <Link to="#" className="hover:text-slate-950 transition-colors">Terms of Service</Link>
+                <Link to="/privacy" className="hover:text-slate-950 transition-colors">Privacy Policy</Link>
+                <Link to="/terms" className="hover:text-slate-950 transition-colors">Terms of Service</Link>
               </div>
            </div>
            <div className="flex items-center gap-4">

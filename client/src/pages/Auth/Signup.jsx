@@ -22,7 +22,7 @@ const Signup = () => {
       toast.success('Account created! Please verify your email.');
       navigate('/login');
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.error || error.message || 'Signup failed');
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ const Signup = () => {
             <div className="pt-4">
               <button 
                 disabled={loading}
-                className="w-full bg-primary hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(59,130,246,0.3)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.5)] transition-all flex justify-center items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(59,130,246,0.3)] hover:shadow-[0_8px_30px_rgb(59,130,246,0.5)] transition-all flex justify-center items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="animate-spin" /> : <>Sign Up <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>}
               </button>
@@ -143,7 +143,7 @@ const Signup = () => {
           </form>
 
           <div className="mt-10 text-center text-slate-500 font-medium">
-            Already have an account? <Link to="/login" className="text-primary font-bold hover:text-blue-700 transition-colors ml-1">Sign In</Link>
+            Already have an account? <Link to="/login" className="text-blue-600 font-bold hover:text-blue-800 transition-colors ml-1">Sign In</Link>
           </div>
         </motion.div>
       </div>

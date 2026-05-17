@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const AuthContext = createContext({});
 
@@ -13,16 +13,20 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('arcticfresh_token');
     
     if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        // Corrupted JSON — clean up
+        localStorage.removeItem('arcticfresh_user');
+        localStorage.removeItem('arcticfresh_token');
+      }
     }
     setLoading(false);
   }, []);
 
   const signup = async (email, password, fullName) => {
     try {
-      const { data } = await axios.post('/api/auth/register', { email, password, fullName });
-      // Supabase signUp might not log them in immediately if email confirmation is required,
-      // but if it does, it returns session. Let's just return data.
+      const { data } = await api.post('/auth/register', { email, password, fullName });
       return { data, error: null };
     } catch (error) {
       return { data: null, error: error.response?.data || error };
@@ -31,7 +35,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const { data } = await axios.post('/api/auth/login', { email, password });
+      const { data } = await api.post('/auth/login', { email, password });
       
       const session = data.data.session;
       const userData = data.data.user;
