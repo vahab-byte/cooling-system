@@ -71,7 +71,8 @@ const BookingModal = ({ isOpen, onClose, serviceId, serviceTitle, price }) => {
       toast.success('Booking confirmed! Track it in your dashboard.');
       onClose();
     } catch (error) {
-      toast.error('Booking failed. Please try again.');
+      const errorMsg = error.response?.data?.details?.[0] || error.response?.data?.error || 'Booking failed. Please try again.';
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -190,11 +191,13 @@ const BookingModal = ({ isOpen, onClose, serviceId, serviceTitle, price }) => {
                            value={address}
                            onChange={(e) => setAddress(e.target.value)}
                          />
-                      </div>
+                      {address && address.trim().length < 10 && (
+                        <p className="text-red-500 text-xs mt-2 font-semibold">Address must be at least 10 characters long</p>
+                      )}
                     </div>
 
                     <button 
-                      disabled={!date || !address}
+                      disabled={!date || !address || address.trim().length < 10}
                       onClick={() => setStep(2)}
                       className="w-full btn btn-primary py-5 text-sm"
                     >

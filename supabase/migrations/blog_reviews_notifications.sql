@@ -127,17 +127,12 @@ ON CONFLICT (slug) DO NOTHING;
 -- REVIEWS TABLE
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS public.reviews (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL,
-    booking_id UUID REFERENCES public.bookings(id),
-    service_id UUID REFERENCES public.services(id),
-    technician_id UUID REFERENCES public.technicians(id),
-    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    comment TEXT,
-    is_verified BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- ============================================
+-- REVIEWS TABLE (ALTER EXISTING)
+-- ============================================
+
+ALTER TABLE public.reviews ADD COLUMN IF NOT EXISTS service_id BIGINT REFERENCES public.services(id);
+ALTER TABLE public.reviews ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
 
 CREATE INDEX IF NOT EXISTS idx_reviews_service ON public.reviews(service_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_technician ON public.reviews(technician_id);

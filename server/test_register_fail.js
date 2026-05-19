@@ -5,15 +5,15 @@ async function test() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: 'sabdulwahab252@gmail.com',
-        password: 'somenewpassword',
+        password: 'Shaikh@123',
         fullName: 'Shaikh Vahab'
       })
     });
-    
+
     console.log("Status:", res.status);
     const text = await res.text();
     console.log("Body:", text);
-  } catch(e) {
+  } catch (e) {
     console.log("Fetch failed:", e);
   }
 }
