@@ -194,6 +194,7 @@ const BookingModal = ({ isOpen, onClose, serviceId, serviceTitle, price }) => {
                       {address && address.trim().length < 10 && (
                         <p className="text-red-500 text-xs mt-2 font-semibold">Address must be at least 10 characters long</p>
                       )}
+                      </div>
                     </div>
 
                     <button 
