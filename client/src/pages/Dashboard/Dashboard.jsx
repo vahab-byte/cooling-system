@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import ProgressTracker from './ProgressTracker';
 import ReviewModal from './ReviewModal';
 import SupportTab from './SupportTab';
+import TechnicianProfile from '../../components/common/TechnicianProfile';
 import { downloadInvoice } from './InvoiceGenerator';
 
 const STATUS_STAGES = ['pending', 'confirmed', 'assigned', 'en_route', 'in_progress', 'completed'];
@@ -538,22 +539,7 @@ const Dashboard = () => {
                         <div className="lg:w-80 flex flex-col gap-6">
                            <div className="flex-1 flex flex-col justify-center">
                               {technician ? (
-                                 <div className="flex items-center gap-4 p-4 bg-slate-900 rounded-2xl text-white">
-                                    <div className="w-12 h-12 rounded-xl bg-white/10 overflow-hidden">
-                                      {technician.avatar_url ? (
-                                        <img src={technician.avatar_url} alt={technician.name} className="w-full h-full object-cover" />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center"><UserCircle2 size={24} className="text-white/20" /></div>
-                                      )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                       <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-0.5 whitespace-nowrap">Assigned Expert</div>
-                                       <h4 className="font-bold text-sm truncate">{technician.name}</h4>
-                                    </div>
-                                    <a href={`tel:${technician.phone}`} className="w-10 h-10 bg-white/10 hover:bg-primary rounded-xl flex items-center justify-center transition-colors">
-                                       <Phone size={16} />
-                                    </a>
-                                 </div>
+                                 <TechnicianProfile technician={technician} />
                               ) : (
                                  <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4">
                                     <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">

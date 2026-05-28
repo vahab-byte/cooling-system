@@ -8,6 +8,7 @@ import BookingSection from '../components/sections/BookingSection';
 import Testimonials from '../components/sections/Testimonials';
 import FAQ from '../components/sections/FAQ';
 import SEO from '../components/common/SEO';
+import VisualEstimator from '../components/sections/VisualEstimator';
 
 const Home = () => {
   return (
@@ -16,6 +17,7 @@ const Home = () => {
       <Hero />
       <StatsBanner />
       <Services />
+      <VisualEstimator />
       <WhyChooseUs />
       <ServiceProcess />
       <BookingSection />
