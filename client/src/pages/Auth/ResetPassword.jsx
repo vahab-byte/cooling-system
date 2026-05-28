@@ -154,7 +154,7 @@ const ResetPassword = () => {
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">
                     6-Digit Reset Code
                   </label>
-                  <div className="flex gap-2" onPaste={handleOtpPaste}>
+                  <div className="flex justify-between gap-2 sm:gap-3" onPaste={handleOtpPaste}>
                     {otp.map((digit, i) => (
                       <input
                         key={i}
@@ -165,7 +165,7 @@ const ResetPassword = () => {
                         value={digit}
                         onChange={e => handleOtpChange(i, e.target.value)}
                         onKeyDown={e => handleOtpKeyDown(i, e)}
-                        className={`flex-1 h-14 text-center text-xl font-black rounded-2xl border transition-all focus:outline-none ${
+                        className={`w-10 sm:w-12 h-12 sm:h-14 text-center text-xl font-black rounded-xl sm:rounded-2xl border transition-all focus:outline-none ${
                           digit
                             ? 'bg-blue-600/20 border-blue-500 text-white'
                             : 'bg-white/5 border-white/10 text-white focus:border-blue-500'

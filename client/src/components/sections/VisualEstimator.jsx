@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Tool, Snowflake, Droplets, Zap, Wrench, CheckCircle2, AlertCircle, ChevronRight, Calculator } from 'lucide-react';
+import { ShieldCheck, PenTool, Snowflake, Droplets, Zap, Wrench, CheckCircle2, AlertCircle, ChevronRight, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ISSUES = [
@@ -32,7 +32,7 @@ const ISSUES = [
   },
   {
     id: 'noise',
-    icon: Tool,
+    icon: PenTool,
     title: 'Making Strange Noises',
     desc: 'Loud rattling, buzzing, or grinding sounds from indoor/outdoor unit.',
     laborCost: 499,
