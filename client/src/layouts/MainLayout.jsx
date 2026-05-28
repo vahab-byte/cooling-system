@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ChatWidget from '../components/common/ChatWidget';
-import WhatsAppButton from '../components/common/WhatsAppButton';
+import CallWidget from '../components/common/CallWidget';
 import ScrollToTop from '../components/common/ScrollToTop';
 
 const MainLayout = () => {
@@ -14,7 +14,7 @@ const MainLayout = () => {
       <main>
         <Outlet />
       </main>
-      <WhatsAppButton />
+      <CallWidget />
       <ChatWidget />
       <Footer />
     </div>

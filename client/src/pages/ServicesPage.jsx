@@ -21,14 +21,14 @@ const ServicesPage = () => {
                     <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-400">Engineered for Performance</span>
                   </div>
-                  <h1 className="text-6xl lg:text-8xl font-medium text-black mb-8 tracking-tight font-display leading-[1.05]">
+                  <h1 className="text-4xl sm:text-6xl lg:text-8xl font-medium text-black mb-8 tracking-tight font-display leading-[1.05]">
                      Solutions for a <br /> <span className="text-neutral-400">Better Atmosphere.</span>
                   </h1>
                   <p className="text-xl text-neutral-500 font-medium leading-relaxed max-w-2xl mb-12">
                      From high-precision residential installations to commercial-grade maintenance protocols, we provide surgical-grade climate control solutions.
                   </p>
                   
-                  <div className="flex flex-wrap gap-8">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                      <div className="flex items-center gap-3">
                         <CheckCircle2 className="text-black" size={20} />
                         <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">OEM Verified Spares</span>
@@ -85,7 +85,7 @@ const ServicesPage = () => {
       {/* Pricing CTA Layer */}
       <Section className="bg-white">
          <Container>
-            <div className="max-w-4xl border border-neutral-100 p-12 lg:p-20 bg-neutral-50 mx-auto">
+            <div className="max-w-4xl border border-neutral-100 p-6 sm:p-12 lg:p-20 bg-neutral-50 mx-auto">
                <h3 className="text-3xl lg:text-5xl font-medium text-black mb-8 tracking-tight leading-[1.1]">Looking for Annual <br /><span className="text-neutral-400">Total Protection?</span></h3>
                <p className="text-neutral-500 text-lg mb-12 max-w-2xl leading-relaxed">
                   Save up to 40% on labor and parts with our Platinum subscription plans. Includes priority response and surgical-grade thermal diagnostics.

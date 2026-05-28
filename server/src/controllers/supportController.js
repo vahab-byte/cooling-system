@@ -35,6 +35,20 @@ export const getTickets = async (req, res, next) => {
   }
 };
 
+export const getUserTickets = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const result = await db.query('SELECT * FROM support_tickets WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    res.status(200).json({
+      success: true,
+      count: result.rows.length,
+      data: result.rows
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateTicketStatus = async (req, res, next) => {
   try {
     const { id } = req.params;

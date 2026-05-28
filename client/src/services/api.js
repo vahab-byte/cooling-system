@@ -137,6 +137,32 @@ export const dashboardService = {
   getUserOverview: async (userId) => {
     const { data } = await api.get(`/dashboard/user-overview/${userId}`);
     return data.data;
+  },
+  getUserNotifications: async (userId) => {
+    const { data } = await api.get(`/dashboard/notifications/${userId}`);
+    return data.data;
+  },
+  markNotificationRead: async (id) => {
+    const { data } = await api.patch(`/dashboard/notifications/${id}/read`);
+    return data.data;
+  }
+};
+
+export const supportService = {
+  async createTicket(ticketData) {
+    const { data } = await api.post('/support', ticketData);
+    return data;
+  },
+  async getUserTickets(userId) {
+    const { data } = await api.get(`/support/user/${userId}`);
+    return data.data;
+  }
+};
+
+export const reviewService = {
+  async submitReview(reviewData) {
+    const { data } = await api.post('/testimonials', reviewData);
+    return data;
   }
 };
 

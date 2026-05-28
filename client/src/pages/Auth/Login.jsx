@@ -17,7 +17,15 @@ const Login = () => {
     setLoading(true);
     try {
       const { error } = await login(email, password);
-      if (error) throw error;
+      if (error) {
+        // Check if email not verified
+        if (error.code === 'EMAIL_NOT_VERIFIED') {
+          toast.error('Please verify your email first.');
+          navigate('/verify-email', { state: { email: error.data?.email || email } });
+          return;
+        }
+        throw error;
+      }
       toast.success('Welcome back!');
       navigate('/');
     } catch (error) {
@@ -90,7 +98,7 @@ const Login = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <label className="text-sm font-semibold text-slate-700">Password</label>
-                <a href="#" className="text-sm font-semibold text-primary hover:text-blue-700 transition-colors">Forgot Password?</a>
+                <Link to="/forgot-password" className="text-sm font-semibold text-primary hover:text-blue-700 transition-colors">Forgot Password?</Link>
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />

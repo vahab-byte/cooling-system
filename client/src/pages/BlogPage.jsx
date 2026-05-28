@@ -102,7 +102,7 @@ const BlogPage = () => {
                 <span className="text-[10px] font-black uppercase tracking-[0.3em]">Operational Intelligence</span>
               </div>
               
-              <h1 className="text-6xl lg:text-[9rem] font-black text-slate-950 mb-10 tracking-tighter leading-[0.85] uppercase">
+              <h1 className="text-4xl sm:text-6xl lg:text-[9rem] font-black text-slate-950 mb-10 tracking-tighter leading-[0.85] uppercase">
                 Arctic <br />
                 <span className="text-primary italic">Insights.</span>
               </h1>
@@ -318,7 +318,7 @@ const BlogPage = () => {
 
           {/* Newsletter CTA */}
           <section className="mt-40 relative">
-             <div className="bg-slate-950 rounded-[4rem] p-16 lg:p-32 text-center relative overflow-hidden group">
+             <div className="bg-slate-950 rounded-[4rem] p-8 sm:p-16 lg:p-32 text-center relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
                 
@@ -327,7 +327,7 @@ const BlogPage = () => {
                       <Sparkles size={14} className="text-primary" />
                       <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Strategic Access</span>
                    </div>
-                   <h2 className="text-5xl lg:text-8xl font-black text-white mb-16 tracking-tighter leading-[0.95] uppercase">
+                   <h2 className="text-3xl sm:text-5xl lg:text-8xl font-black text-white mb-16 tracking-tighter leading-[0.95] uppercase">
                       Sync with <br />
                       <span className="text-primary italic">The Arctic.</span>
                    </h2>

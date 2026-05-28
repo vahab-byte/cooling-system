@@ -4,6 +4,7 @@ import { X, Calendar, MapPin, Loader2, ArrowRight, Settings, FileText, ShieldChe
 import { bookingService, sparePartsService } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-hot-toast';
+import AddressAutocomplete from './AddressAutocomplete';
 
 // We now fetch these dynamically from the /api/spare-parts endpoint
 
@@ -111,7 +112,7 @@ const BookingModal = ({ isOpen, onClose, serviceId, serviceTitle, price }) => {
         className="relative w-full max-w-4xl bg-white rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col lg:flex-row max-h-[90vh]"
       >
         {/* Left Sidebar: Progress */}
-        <div className="lg:w-72 bg-neutral-50 p-10 flex flex-col border-r border-neutral-100">
+        <div className="hidden lg:flex lg:w-72 bg-neutral-50 p-10 flex-col border-r border-neutral-100">
           <div className="mb-12">
              <div className="text-black text-[10px] font-black uppercase tracking-widest mb-2">Booking Wizard</div>
              <h3 className="text-black text-2xl font-black leading-tight tracking-tight">Professional <br/>Service.</h3>
@@ -154,7 +155,10 @@ const BookingModal = ({ isOpen, onClose, serviceId, serviceTitle, price }) => {
           {/* Header */}
           <div className="p-8 border-b border-neutral-50 flex justify-between items-center bg-white/50 backdrop-blur-sm sticky top-0 z-20">
              <div>
-                <h4 className="text-xl font-black text-black tracking-tight">{serviceTitle}</h4>
+                <div className="flex items-center gap-2">
+                   <h4 className="text-xl font-black text-black tracking-tight">{serviceTitle}</h4>
+                   <span className="lg:hidden bg-neutral-100 text-neutral-850 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Step {step}/3</span>
+                </div>
                 <div className="text-xs font-bold text-neutral-400 mt-1 uppercase tracking-widest">Starting from ₹{price}</div>
              </div>
              <button onClick={onClose} className="w-12 h-12 rounded-full bg-neutral-50 hover:bg-neutral-100 flex items-center justify-center group transition-all">
@@ -164,7 +168,7 @@ const BookingModal = ({ isOpen, onClose, serviceId, serviceTitle, price }) => {
 
 
           {/* Form Steps */}
-          <div className="flex-1 p-10 overflow-y-auto">
+          <div className="flex-1 p-6 sm:p-10 overflow-y-auto">
              <AnimatePresence mode="wait">
                 {step === 1 && (
                   <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
@@ -181,21 +185,12 @@ const BookingModal = ({ isOpen, onClose, serviceId, serviceTitle, price }) => {
                       </div>
                     </div>
                     
-                    <div>
-                      <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-3">Service Address</label>
-                      <div className="relative">
-                         <MapPin className="absolute left-5 top-5 text-black pointer-events-none" size={20} />
-                         <textarea 
-                           className="input-field pl-14 min-h-[120px] pt-4"
-                           placeholder="Ex: 123 Business Road, Ahmedabad, Gujarat"
-                           value={address}
-                           onChange={(e) => setAddress(e.target.value)}
-                         />
-                      {address && address.trim().length < 10 && (
-                        <p className="text-red-500 text-xs mt-2 font-semibold">Address must be at least 10 characters long</p>
-                      )}
-                      </div>
-                    </div>
+                    <AddressAutocomplete
+                      variant="modal"
+                      value={address}
+                      onChange={(val) => setAddress(val)}
+                      placeholder="Ex: 123 Business Road, Ahmedabad, Gujarat"
+                    />
 
                     <button 
                       disabled={!date || !address || address.trim().length < 10}

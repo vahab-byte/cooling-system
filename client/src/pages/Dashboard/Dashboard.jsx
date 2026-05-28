@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { bookingService, dashboardService, paymentService } from '../../services/api';
-import { Calendar, Clock, MapPin, Tag, Loader2, AlertCircle, CheckCircle2, UserCircle2, Phone, Star, LayoutDashboard, History, CreditCard, ChevronRight, Settings, Sparkles } from 'lucide-react';
+import { Calendar, Clock, MapPin, Tag, Loader2, AlertCircle, CheckCircle2, UserCircle2, Phone, Star, LayoutDashboard, History, CreditCard, ChevronRight, Settings, Sparkles, Bell, Download, MessageSquarePlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loadRazorpay } from '../../components/common/RazorpayLoader';
 import { toast } from 'react-hot-toast';
+
+import ProgressTracker from './ProgressTracker';
+import ReviewModal from './ReviewModal';
+import SupportTab from './SupportTab';
+import { downloadInvoice } from './InvoiceGenerator';
 
 const STATUS_STAGES = ['pending', 'confirmed', 'assigned', 'en_route', 'in_progress', 'completed'];
 const STATUS_LABELS = {
@@ -24,6 +29,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('active');
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [reviewModalData, setReviewModalData] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -32,12 +40,14 @@ const Dashboard = () => {
   const fetchData = async () => {
     if (!user) return;
     try {
-      const [bookingsData, overviewData] = await Promise.all([
+      const [bookingsData, overviewData, notifData] = await Promise.all([
         bookingService.getUserBookings(user.id),
-        dashboardService.getUserOverview(user.id)
+        dashboardService.getUserOverview(user.id),
+        dashboardService.getUserNotifications(user.id)
       ]);
       setBookings(bookingsData || []);
       setOverview(overviewData || { totalSpent: 0, activeCount: 0 });
+      setNotifications(notifData || []);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch dashboard data.');
@@ -113,6 +123,15 @@ const Dashboard = () => {
     }
   };
 
+  const handleMarkRead = async (id) => {
+    try {
+      await dashboardService.markNotificationRead(id);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">
        <div className="relative">
@@ -139,6 +158,7 @@ const Dashboard = () => {
               { id: 'active', label: 'Ongoing Services', icon: LayoutDashboard },
               { id: 'past', label: 'History', icon: History },
               { id: 'billing', label: 'Payments', icon: CreditCard },
+              { id: 'support', label: 'Support Desk', icon: MessageSquarePlus },
               { id: 'settings', label: 'Account', icon: Settings }
             ].map((btn) => {
               const Icon = btn.icon;
@@ -168,7 +188,7 @@ const Dashboard = () => {
                </div>
                <div className="font-bold text-slate-900 text-sm mb-1">ArcticFresh PRO</div>
                <div className="text-[11px] text-slate-400 mb-5 leading-relaxed">Priority status active.</div>
-               <button className="w-full py-2.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-[11px] font-bold hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Support Desk</button>
+               <button onClick={() => setActiveTab('support')} className="w-full py-2.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-[11px] font-bold hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Support Desk</button>
             </div>
          </div>
       </aside>
@@ -186,7 +206,50 @@ const Dashboard = () => {
               <p className="text-sm text-slate-500 font-medium">Hello, {user?.user_metadata?.full_name || 'Valued Client'}. Welcome back to your ArcticFresh dashboard.</p>
            </div>
            
-           <div className="flex gap-16">
+           <div className="flex gap-10 items-center">
+              <div className="relative">
+                 <button 
+                   onClick={() => setShowNotifications(!showNotifications)}
+                   className="w-12 h-12 bg-slate-50 hover:bg-slate-100 rounded-full flex items-center justify-center transition-colors relative"
+                 >
+                   <Bell size={20} className="text-slate-600" />
+                   {notifications.filter(n => !n.is_read).length > 0 && (
+                     <span className="absolute top-2 right-2 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
+                   )}
+                 </button>
+                 <AnimatePresence>
+                   {showNotifications && (
+                     <motion.div 
+                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                       animate={{ opacity: 1, y: 0, scale: 1 }}
+                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                       className="absolute right-0 top-16 w-80 bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-100 overflow-hidden z-50"
+                     >
+                        <div className="p-4 border-b border-slate-50">
+                           <h4 className="font-bold text-sm">Notifications</h4>
+                        </div>
+                        <div className="max-h-80 overflow-y-auto">
+                           {notifications.length === 0 ? (
+                             <div className="p-8 text-center text-slate-400 text-xs">No notifications.</div>
+                           ) : (
+                             notifications.map(n => (
+                               <div 
+                                 key={n.id} 
+                                 onClick={() => !n.is_read && handleMarkRead(n.id)}
+                                 className={`p-4 border-b border-slate-50 text-sm cursor-pointer hover:bg-slate-50 transition-colors ${!n.is_read ? 'bg-primary/5' : ''}`}
+                               >
+                                 <h5 className={`font-bold ${!n.is_read ? 'text-slate-900' : 'text-slate-600'}`}>{n.title}</h5>
+                                 <p className="text-xs text-slate-500 mt-1">{n.message}</p>
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase mt-2 block">{new Date(n.created_at).toLocaleDateString()}</span>
+                               </div>
+                             ))
+                           )}
+                        </div>
+                     </motion.div>
+                   )}
+                 </AnimatePresence>
+              </div>
+
               <div>
                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">My Spending</span>
                  <div className="flex items-baseline gap-1">
@@ -219,7 +282,6 @@ const Dashboard = () => {
                animate={{ opacity: 1, y: 0 }}
                className="space-y-8"
              >
-                {/* Wealth Protocol Hub - Redesigned for Luxury Arctic */}
                 <div className="grid md:grid-cols-2 gap-8">
                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden group">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-700" />
@@ -264,7 +326,6 @@ const Dashboard = () => {
                          <h3 className="text-xl font-bold text-slate-900 tracking-tight">Billing Protocol Hub</h3>
                          <p className="text-sm text-slate-500 font-medium">Verify your financial history and secure pending service payments.</p>
                       </div>
-                      <button className="px-6 py-3 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all">Download Statement</button>
                    </div>
                    <div className="overflow-x-auto">
                       <table className="w-full text-left">
@@ -311,8 +372,12 @@ const Dashboard = () => {
                                            Pay Now
                                         </button>
                                      ) : (
-                                        <button className="p-2.5 text-slate-300 hover:text-primary transition-colors bg-slate-50 rounded-lg">
-                                           <ChevronRight size={16} />
+                                        <button 
+                                          onClick={() => downloadInvoice(b, user)}
+                                          className="px-4 py-2.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 transition-all flex items-center gap-2 ml-auto"
+                                        >
+                                           <Download size={12} />
+                                           Invoice
                                         </button>
                                      )}
                                   </td>
@@ -332,9 +397,17 @@ const Dashboard = () => {
                       </table>
                    </div>
                 </div>
+              </motion.div>
+           ) : activeTab === 'support' ? (
+             <motion.div
+               key="support"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+             >
+               <SupportTab user={user} />
              </motion.div>
-          ) : activeTab === 'settings' ? (
-             <motion.div 
+           ) : activeTab === 'settings' ? (
+              <motion.div 
                key="settings"
                initial={{ opacity: 0, y: 10 }}
                animate={{ opacity: 1, y: 0 }}
@@ -492,18 +565,7 @@ const Dashboard = () => {
                            </div>
 
                            {!isCancelled && (
-                              <div className="space-y-3">
-                                 <div className="flex justify-between items-center px-1">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Status</span>
-                                    <span className="text-[11px] font-bold text-primary uppercase tracking-wider">{STATUS_LABELS[booking.status]}</span>
-                                 </div>
-                                 <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                    <div 
-                                      className="h-full bg-primary transition-all duration-1000 ease-in-out"
-                                      style={{ width: `${((currentStageIndex + 1) / STATUS_STAGES.length) * 100}%` }}
-                                    />
-                                 </div>
-                              </div>
+                              <ProgressTracker currentStatus={booking.status} />
                            )}
 
                            {booking.payment_status === 'unpaid' && !isCancelled && (
@@ -522,6 +584,16 @@ const Dashboard = () => {
                                 Protocol Paid
                               </div>
                             )}
+
+                            {activeTab === 'past' && booking.status === 'completed' && (
+                              <button 
+                                onClick={() => setReviewModalData(booking)}
+                                className="w-full py-4 bg-white text-slate-600 rounded-2xl text-[11px] font-bold uppercase tracking-[0.2em] border border-slate-200 flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
+                              >
+                                <Star size={14} />
+                                Leave Review
+                              </button>
+                            )}
                         </div>
 
                       </div>
@@ -532,6 +604,13 @@ const Dashboard = () => {
             )
           )}
         </AnimatePresence>
+
+        <ReviewModal 
+          isOpen={!!reviewModalData} 
+          onClose={() => setReviewModalData(null)} 
+          booking={reviewModalData}
+          user={user}
+        />
       </main>
     </div>
   );

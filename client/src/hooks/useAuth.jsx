@@ -33,6 +33,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const verifyEmail = async (email, otp) => {
+    try {
+      const { data } = await api.post('/auth/verify-email', { email, otp });
+      return { data, error: null };
+    } catch (error) {
+      return { data: null, error: error.response?.data || error };
+    }
+  };
+
+  const resendVerification = async (email) => {
+    try {
+      const { data } = await api.post('/auth/resend-verification', { email });
+      return { data, error: null };
+    } catch (error) {
+      return { data: null, error: error.response?.data || error };
+    }
+  };
+
   const login = async (email, password) => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
@@ -58,10 +76,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, signup, login, logout, verifyEmail, resendVerification }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+

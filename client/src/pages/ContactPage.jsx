@@ -50,7 +50,7 @@ const ContactPage = () => {
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Personalized Support</span>
             </div>
-            <h1 className="text-6xl lg:text-8xl font-bold text-slate-900 mb-8 tracking-tight leading-[1.05]">
+            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-bold text-slate-900 mb-8 tracking-tight leading-[1.05]">
               Always Here to <br /> <span className="text-primary italic">Perfect Your Atmosphere.</span>
             </h1>
             <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-2xl">
@@ -81,7 +81,7 @@ const ContactPage = () => {
               ))}
             </div>
 
-            <div className="bg-slate-950 rounded-[2.5rem] p-10 lg:p-14 relative overflow-hidden group shadow-2xl">
+            <div className="bg-slate-950 rounded-[2.5rem] p-6 sm:p-10 lg:p-14 relative overflow-hidden group shadow-2xl">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
               <div className="relative z-10 text-white">
                 <div className="flex items-center gap-3 text-primary text-[10px] font-bold uppercase tracking-[0.3em] mb-6">
@@ -100,7 +100,7 @@ const ContactPage = () => {
 
           {/* Clean Form Column */}
           <div className="lg:col-span-12 xl:col-span-7">
-            <div className="rounded-[3rem] p-10 lg:p-16 bg-white border border-slate-100 relative shadow-[0_40px_100px_-20px_rgba(0,0,0,0.06)] hover:border-primary transition-all duration-700">
+            <div className="rounded-[3rem] p-6 sm:p-10 lg:p-16 bg-white border border-slate-100 relative shadow-[0_40px_100px_-20px_rgba(0,0,0,0.06)] hover:border-primary transition-all duration-700">
               <div className="relative z-10">
                 <h3 className="text-4xl lg:text-5xl font-bold mb-12 tracking-tight text-slate-950">Send a <span className="text-primary italic">Message.</span></h3>
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -156,7 +156,7 @@ const ContactPage = () => {
         </div>
 
         {/* Clean Service Guidance */}
-        <div className="mb-40 rounded-[2.5rem] border border-slate-100 p-10 lg:p-16 bg-slate-50/50">
+        <div className="mb-40 rounded-[2.5rem] border border-slate-100 p-6 sm:p-10 lg:p-16 bg-slate-50/50">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
             {[
               { zone: "Satellite Hub", area: "Satellite, Vastrapur, Bodakdev", time: "15 min" },
@@ -193,7 +193,7 @@ const ContactPage = () => {
             </div>
           </div>
 
-          <div className="h-[550px] rounded-[3rem] overflow-hidden relative border border-slate-100 shadow-2xl transition-all duration-1000 grayscale-[0.2] hover:grayscale-0">
+          <div className="h-[300px] sm:h-[400px] md:h-[550px] rounded-[3rem] overflow-hidden relative border border-slate-100 shadow-2xl transition-all duration-1000 grayscale-[0.2] hover:grayscale-0">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117506.38133504106!2d72.5027878!3d23.0202434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e848aba5bd449%3A0x4fccd11674f9e90!2sAhmedabad%2C%20Gujarat!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
               width="100%"

@@ -19,8 +19,8 @@ const Signup = () => {
     try {
       const { data, error } = await signup(email, password, fullName);
       if (error) throw error;
-      toast.success('Account created! Please verify your email.');
-      navigate('/login');
+      toast.success('Verification code sent to your email!');
+      navigate('/verify-email', { state: { email } });
     } catch (error) {
       toast.error(error.error || error.message || 'Signup failed');
     } finally {

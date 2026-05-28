@@ -102,7 +102,7 @@ const PricingPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className={`relative p-10 lg:p-14 rounded-[2.5rem] border transition-all duration-500 flex flex-col group overflow-hidden ${
+                  className={`relative p-6 sm:p-10 lg:p-14 rounded-[2.5rem] border transition-all duration-500 flex flex-col group overflow-hidden ${
                     plan.is_popular 
                     ? 'bg-white border-primary shadow-[0_40px_100px_-20px_rgba(37,99,235,0.15)] ring-4 ring-primary/5 lg:scale-105 z-10' 
                     : 'bg-white border-slate-100 hover:border-slate-300'
@@ -176,8 +176,8 @@ const PricingPage = () => {
              <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">Compare <span className="text-primary italic">Our Plans.</span></h2>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl bg-white border border-slate-100 shadow-xl overflow-hidden mb-10">
-            <table className="w-full">
+          <div className="overflow-x-auto rounded-3xl bg-white border border-slate-100 shadow-xl mb-10">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="bg-slate-900 text-white">
                   <th className="p-8 text-left text-[11px] font-bold uppercase tracking-widest">Service Features</th>

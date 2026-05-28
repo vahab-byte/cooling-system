@@ -7,8 +7,8 @@ const Card = ({
   variant = 'default'
 }) => {
   const paddings = {
-    standard: "p-8 lg:p-12",
-    small: "p-6",
+    standard: "p-6 sm:p-8 lg:p-12",
+    small: "p-4 sm:p-6",
     none: ""
   };
 

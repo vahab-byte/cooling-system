@@ -4,6 +4,7 @@ import { Send, CheckCircle, Loader2 } from 'lucide-react';
 import Section from '../ui/Section';
 import Container from '../ui/Container';
 import { bookingService } from '../../services/api';
+import AddressAutocomplete from '../common/AddressAutocomplete';
 
 const serviceOptions = [
   'AC Repair',
@@ -166,18 +167,14 @@ const BookingSection = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-3">Address *</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={form.address}
-                  onChange={handleChange}
-                  required
-                  placeholder="House / Office full address"
-                  className="w-full border-b-2 border-neutral-100 bg-transparent px-0 py-4 text-sm font-bold text-black placeholder:text-neutral-300 focus:outline-none focus:border-blue-600 transition-all"
-                />
-              </div>
+              <AddressAutocomplete
+                variant="default"
+                value={form.address}
+                onChange={(val) => setForm(prev => ({ ...prev, address: val }))}
+                required
+                placeholder="Search for your address..."
+                name="address"
+              />
 
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-3">Service Type *</label>

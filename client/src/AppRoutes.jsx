@@ -15,10 +15,13 @@ const BlogArticle = lazy(() => import('./pages/BlogArticle'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const Login = lazy(() => import('./pages/Auth/Login'));
 const Signup = lazy(() => import('./pages/Auth/Signup'));
+const VerifyEmail = lazy(() => import('./pages/Auth/VerifyEmail'));
 const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const Terms = lazy(() => import('./pages/Terms'));
+const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
 
 // Loading fallback with premium feel
 const PageLoader = () => (
@@ -45,6 +48,9 @@ const AppRoutes = () => {
         {/* Auth Pages (No Header/Footer) */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Public Pages with MainLayout (Full Footer) */}
         <Route element={<MainLayout />}>

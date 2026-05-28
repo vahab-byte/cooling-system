@@ -113,7 +113,7 @@ export const blogPosts = [
     date: "Oct 24, 2026",
     readTime: "12 Min",
     expert: "Dr. Aris Thorne",
-    img: "https://images.unsplash.com/photo-1558389186-438424b00a32?auto=format&fit=crop&q=80&w=1200"
+    img: "/images/blog-industrial.png"
   },
   {
     id: 2,
@@ -123,7 +123,7 @@ export const blogPosts = [
     date: "Oct 21, 2026",
     readTime: "8 Min",
     expert: "Master Tech V. Ray",
-    img: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800"
+    img: "/images/blog-foam-clean.png"
   },
   {
     id: 3,
@@ -133,7 +133,7 @@ export const blogPosts = [
     date: "Oct 19, 2026",
     readTime: "10 Min",
     expert: "S. Kapoor, Lead Engineer",
-    img: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=800"
+    img: "/images/blog-thermostat.png"
   },
   {
     id: 4,
@@ -143,7 +143,7 @@ export const blogPosts = [
     date: "Oct 15, 2026",
     readTime: "7 Min",
     expert: "N. Tesla Jr.",
-    img: "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&q=80&w=800"
+    img: "/images/blog-smart-ac.png"
   },
   {
     id: 5,
@@ -153,7 +153,7 @@ export const blogPosts = [
     date: "Oct 10, 2026",
     readTime: "15 Min",
     expert: "Chief Strategy Officer",
-    img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800"
+    img: "/images/blog-futuristic-ac.png"
   },
   {
     id: 6,
@@ -163,6 +163,6 @@ export const blogPosts = [
     date: "Oct 05, 2026",
     readTime: "9 Min",
     expert: "Biosafety Division",
-    img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800"
+    img: "/images/blog-hepa-filter.png"
   }
 ];

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDashboardStats, getUserDashboardOverview } from '../controllers/dashboardController.js';
+import { getDashboardStats, getUserDashboardOverview, getUserNotifications, markNotificationRead } from '../controllers/dashboardController.js';
 
 const router = express.Router();
 
@@ -32,5 +32,8 @@ router.get('/stats', getDashboardStats);
  *         description: Success
  */
 router.get('/user-overview/:userId', getUserDashboardOverview);
+
+router.get('/notifications/:userId', getUserNotifications);
+router.patch('/notifications/:id/read', markNotificationRead);
 
 export default router;

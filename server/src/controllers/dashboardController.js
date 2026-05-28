@@ -42,3 +42,35 @@ export const getUserDashboardOverview = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getUserNotifications = async (req, res, next) => {
+  const { userId } = req.params;
+  try {
+    const result = await db.query(
+      'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20',
+      [userId]
+    );
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markNotificationRead = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query(
+      'UPDATE notifications SET is_read = true WHERE id = $1 RETURNING *',
+      [id]
+    );
+    res.status(200).json({
+      success: true,
+      data: result.rows[0]
+    });
+  } catch (error) {
+    next(error);
+  }
+};

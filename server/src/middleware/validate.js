@@ -35,6 +35,15 @@ export const verifyOtpSchema = Joi.object({
   otp_code: Joi.string().length(6).required()
 });
 
+export const verifyEmailSchema = Joi.object({
+  email: Joi.string().email().required(),
+  otp: Joi.string().length(6).required()
+});
+
+export const resendVerificationSchema = Joi.object({
+  email: Joi.string().email().required()
+});
+
 export const createBookingSchema = Joi.object({
   userId: Joi.string().uuid().required(),
   serviceId: Joi.number().integer().required(),
@@ -69,4 +78,14 @@ export const supportSchema = Joi.object({
   user_id: Joi.string().uuid().optional(),
   issue_type: Joi.string().required(),
   message: Joi.string().min(10).required()
+});
+
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required()
+});
+
+export const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+  otp: Joi.string().length(6).required(),
+  newPassword: Joi.string().min(6).required()
 });

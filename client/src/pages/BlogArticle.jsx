@@ -161,7 +161,7 @@ const BlogArticle = () => {
                 <span className="text-[10px] font-black uppercase tracking-[0.3em]">{post.category}</span>
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-black text-slate-950 mb-8 tracking-tighter leading-[0.95]">
+              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black text-slate-950 mb-8 tracking-tighter leading-[0.95]">
                 {post.title}
               </h1>
 
@@ -222,7 +222,7 @@ const BlogArticle = () => {
                 <img 
                   src={post.cover_image} 
                   alt={post.title}
-                  className="w-full h-[400px] lg:h-[500px] object-cover"
+                  className="w-full h-[250px] sm:h-[400px] lg:h-[500px] object-cover"
                   loading="lazy"
                 />
               </motion.div>
@@ -256,7 +256,7 @@ const BlogArticle = () => {
               <div className="flex items-center justify-between mb-12">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary block mb-2">Continue Reading</span>
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tight">Related <span className="text-primary italic">Articles.</span></h3>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Related <span className="text-primary italic">Articles.</span></h3>
                 </div>
                 <Link to="/blog" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-primary transition-colors flex items-center gap-2">
                   View All <ChevronRight size={14} />

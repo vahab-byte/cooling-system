@@ -8,7 +8,7 @@ const WhatsAppButton = () => {
       href="https://wa.me/916353774046"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-[104px] right-6 lg:bottom-[136px] lg:right-12 z-[100] group"
+      className="fixed bottom-[104px] right-6 lg:bottom-[136px] lg:right-12 z-40 group"
     >
       <div className="relative w-14 h-14 lg:w-16 lg:h-16 bg-[#25D366]/10 backdrop-blur-xl border border-[#25D366]/30 text-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:shadow-[#25D366]/20 transition-all duration-500 overflow-visible">
         <MessageSquare size={24} fill="currentColor" className="lg:hidden" />
