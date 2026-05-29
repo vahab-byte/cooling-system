@@ -1,0 +1,39 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install Root Dependencies
+      run: npm ci || npm install
+      
+    - name: Install Client Dependencies
+      run: cd client && npm ci || npm install
+      
+    - name: Install Server Dependencies
+      run: cd server && npm ci || npm install
+
+    - name: Build Frontend
+      run: cd client && npm run build
+      
+    - name: Run Backend Security Audit
+      run: cd server && npm audit --audit-level=high || true
