@@ -1,16 +1,23 @@
-import express from 'express';
-import { getPricingPlans, getPricingDetails, createPricingPlan, updatePricingPlan, deletePricingPlan } from '../controllers/pricingController.js';
-import { protect, requireRole } from '../middleware/authMiddleware.js';
+import express from "express";
+import {
+  getPricingPlans,
+  getPricingDetails,
+  createPricingPlan,
+  updatePricingPlan,
+  deletePricingPlan,
+} from "../controllers/pricingController.js";
+import { protect, requireRole } from "../middleware/authMiddleware.js";
+import { apiCache } from "../middleware/cacheMiddleware.js";
 
 const router = express.Router();
 
-// Public
-router.get('/', getPricingDetails);
-router.get('/plans', getPricingPlans);
+// Public (Cached for 15 minutes)
+router.get("/", apiCache(900), getPricingDetails);
+router.get("/plans", apiCache(900), getPricingPlans);
 
 // Admin
-router.post('/plans', protect, requireRole('admin'), createPricingPlan);
-router.put('/plans/:id', protect, requireRole('admin'), updatePricingPlan);
-router.delete('/plans/:id', protect, requireRole('admin'), deletePricingPlan);
+router.post("/plans", protect, requireRole("admin"), createPricingPlan);
+router.put("/plans/:id", protect, requireRole("admin"), updatePricingPlan);
+router.delete("/plans/:id", protect, requireRole("admin"), deletePricingPlan);
 
 export default router;

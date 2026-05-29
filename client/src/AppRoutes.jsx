@@ -1,27 +1,28 @@
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
-import DashboardLayout from './layouts/DashboardLayout';
-import { useAuth } from './hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import React, { Suspense, lazy } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
+import { useAuth } from "./hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
 // Lazy-loaded pages for code splitting
-const Home = lazy(() => import('./pages/Home'));
-const About = lazy(() => import('./pages/About'));
-const ServicesPage = lazy(() => import('./pages/ServicesPage'));
-const PricingPage = lazy(() => import('./pages/PricingPage'));
-const BlogPage = lazy(() => import('./pages/BlogPage'));
-const BlogArticle = lazy(() => import('./pages/BlogArticle'));
-const ContactPage = lazy(() => import('./pages/ContactPage'));
-const Login = lazy(() => import('./pages/Auth/Login'));
-const Signup = lazy(() => import('./pages/Auth/Signup'));
-const VerifyEmail = lazy(() => import('./pages/Auth/VerifyEmail'));
-const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const Terms = lazy(() => import('./pages/Terms'));
-const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
-const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
+const Home = lazy(() => import("./pages/Home"));
+const About = lazy(() => import("./pages/About"));
+const ServicesPage = lazy(() => import("./pages/ServicesPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
+const BlogArticle = lazy(() => import("./pages/BlogArticle"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const Login = lazy(() => import("./pages/Auth/Login"));
+const Signup = lazy(() => import("./pages/Auth/Signup"));
+const VerifyEmail = lazy(() => import("./pages/Auth/VerifyEmail"));
+const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const ForgotPassword = lazy(() => import("./pages/Auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/Auth/ResetPassword"));
+const AdminDashboard = lazy(() => import("./pages/Dashboard/AdminDashboard"));
 
 // Loading fallback with premium feel
 const PageLoader = () => (
@@ -30,7 +31,9 @@ const PageLoader = () => (
       <div className="relative">
         <div className="w-16 h-16 border-4 border-primary/10 border-t-primary rounded-full animate-spin mx-auto" />
       </div>
-      <div className="mt-6 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 animate-pulse">Loading...</div>
+      <div className="mt-6 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 animate-pulse">
+        Loading...
+      </div>
     </div>
   </div>
 );
@@ -67,13 +70,21 @@ const AppRoutes = () => {
 
         {/* Dashboard with DashboardLayout (No Full Footer) */}
         <Route element={<DashboardLayout />}>
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <PrivateRoute>
                 <Dashboard />
               </PrivateRoute>
-            } 
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
           />
         </Route>
 
