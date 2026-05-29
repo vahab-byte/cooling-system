@@ -23,6 +23,9 @@ const Terms = lazy(() => import("./pages/Terms"));
 const ForgotPassword = lazy(() => import("./pages/Auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/Auth/ResetPassword"));
 const AdminDashboard = lazy(() => import("./pages/Dashboard/AdminDashboard"));
+const TechnicianDashboard = lazy(
+  () => import("./pages/Dashboard/TechnicianDashboard"),
+);
 
 // Loading fallback with premium feel
 const PageLoader = () => (
@@ -83,6 +86,14 @@ const AppRoutes = () => {
             element={
               <PrivateRoute>
                 <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/technician"
+            element={
+              <PrivateRoute>
+                <TechnicianDashboard />
               </PrivateRoute>
             }
           />

@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Wind, User, Menu, X, LogOut, Phone, ChevronDown } from "lucide-react";
+import {
+  Wind,
+  User,
+  Menu,
+  X,
+  LogOut,
+  Phone,
+  ChevronDown,
+  Wrench,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -222,6 +231,18 @@ const Header = () => {
                         Admin Panel
                       </Link>
                     )}
+                    {user?.role === "technician" && (
+                      <Link
+                        to="/technician"
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                          solidHeader
+                            ? "text-amber-600 hover:bg-amber-50"
+                            : "text-amber-300 hover:text-amber-200 hover:bg-amber-500/20"
+                        }`}
+                      >
+                        <Wrench size={14} /> Tech Panel
+                      </Link>
+                    )}
                     <button
                       onClick={logout}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
@@ -401,6 +422,14 @@ const Header = () => {
                         className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-purple-200 text-purple-600 font-bold text-sm hover:bg-purple-50 transition-all"
                       >
                         Admin Panel
+                      </Link>
+                    )}
+                    {user?.role === "technician" && (
+                      <Link
+                        to="/technician"
+                        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-amber-200 text-amber-600 font-bold text-sm hover:bg-amber-50 transition-all"
+                      >
+                        <Wrench size={14} /> Tech Panel
                       </Link>
                     )}
                     <button

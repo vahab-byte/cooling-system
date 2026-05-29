@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { adminService } from "../../services/api";
+import { adminService, technicianService } from "../../services/api";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -9,6 +9,8 @@ import {
   Package,
   Calendar,
   Loader2,
+  Wrench,
+  MapPin,
 } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -17,6 +19,7 @@ const AdminDashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
+  const [fleet, setFleet] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Simple admin role check
@@ -27,12 +30,14 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const [dashboardStats, allUsers] = await Promise.all([
+        const [dashboardStats, allUsers, allTechs] = await Promise.all([
           adminService.getDashboard(),
           adminService.getAllUsers(),
+          technicianService.getTechnicians(),
         ]);
         setStats(dashboardStats);
         setUsers(allUsers);
+        setFleet(allTechs);
       } catch (error) {
         console.error("Failed to fetch admin data:", error);
       } finally {
@@ -184,6 +189,105 @@ const AdminDashboard = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Live Fleet Tracking */}
+        <div className="mt-12 bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden mb-12">
+          <div className="p-8 border-b border-slate-800 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Wrench className="text-amber-500" /> Live Fleet Tracking
+              </h2>
+              <p className="text-slate-400 text-sm mt-1">
+                Monitor your technicians in real-time
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <span className="px-3 py-1 bg-green-500/10 text-green-400 border border-green-500/20 text-xs font-bold uppercase tracking-wider rounded-lg">
+                {fleet.filter((t) => t.status === "available").length} Available
+              </span>
+              <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold uppercase tracking-wider rounded-lg">
+                {fleet.filter((t) => t.status === "busy").length} Busy
+              </span>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 p-8">
+            {fleet.map((tech) => (
+              <div
+                key={tech.id}
+                className="bg-slate-950 border border-slate-800 rounded-2xl p-6 relative overflow-hidden"
+              >
+                <div
+                  className={`absolute top-0 left-0 w-1 h-full ${
+                    tech.status === "available"
+                      ? "bg-green-500"
+                      : tech.status === "busy"
+                        ? "bg-amber-500"
+                        : "bg-slate-600"
+                  }`}
+                />
+
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-slate-700 overflow-hidden shrink-0">
+                    <img
+                      src={
+                        tech.avatar_url ||
+                        `https://ui-avatars.com/api/?name=${tech.name}&background=1e293b&color=cbd5e1`
+                      }
+                      alt={tech.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-lg">
+                      {tech.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          tech.status === "available"
+                            ? "bg-green-500"
+                            : tech.status === "busy"
+                              ? "bg-amber-500"
+                              : "bg-slate-500"
+                        }`}
+                      />
+                      <span className="text-sm text-slate-400 font-medium capitalize">
+                        {tech.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-900 rounded-xl p-3 border border-slate-800">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
+                      Jobs Done
+                    </div>
+                    <div className="text-lg font-bold text-slate-200">
+                      {tech.jobs_completed}
+                    </div>
+                  </div>
+                  <div className="bg-slate-900 rounded-xl p-3 border border-slate-800">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
+                      Rating
+                    </div>
+                    <div className="text-lg font-bold text-slate-200">
+                      ★ {tech.rating}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {fleet.length === 0 && (
+              <div className="col-span-full py-12 text-center text-slate-500">
+                No technicians found in the fleet. Link a user profile to a
+                technician.
+              </div>
+            )}
           </div>
         </div>
       </div>
