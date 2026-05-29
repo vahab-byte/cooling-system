@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Wind, User, Menu, X, LogOut, Phone, ChevronDown } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { motion, AnimatePresence } from 'framer-motion';
-import Container from '../ui/Container';
+import React, { useState, useEffect, useRef } from "react";
+import { Wind, User, Menu, X, LogOut, Phone, ChevronDown } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { motion, AnimatePresence } from "framer-motion";
+import Container from "../ui/Container";
 
 const Header = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -14,19 +14,19 @@ const Header = () => {
   const callDropdownRef = useRef(null);
 
   const phones = [
-    { label: 'Line 1', number: '6353774046', display: '+91 6353 774 046' },
-    { label: 'Line 2', number: '9726885447', display: '+91 9726 885 447' },
+    { label: "Line 1", number: "6353774046", display: "+91 6353 774 046" },
+    { label: "Line 2", number: "9726885447", display: "+91 9726 885 447" },
   ];
 
   // Only homepage has the dark hero — transparent header only there
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === "/";
   const solidHeader = !isHomePage || isScrolled;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 30);
     setIsScrolled(window.scrollY > 30);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -37,31 +37,36 @@ const Header = () => {
   // Close call dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
-      if (callDropdownRef.current && !callDropdownRef.current.contains(e.target)) {
+      if (
+        callDropdownRef.current &&
+        !callDropdownRef.current.contains(e.target)
+      ) {
         setCallDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [mobileMenuOpen]);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Services', path: '/services' },
-    { name: 'Pricing', path: '/pricing' },
-    { name: 'Blog', path: '/blog' },
-    { name: 'Contact', path: '/contact' },
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+    { name: "Services", path: "/services" },
+    { name: "Pricing", path: "/pricing" },
+    { name: "Blog", path: "/blog" },
+    { name: "Contact", path: "/contact" },
   ];
 
   const isActive = (path) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
@@ -70,25 +75,28 @@ const Header = () => {
       <header
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           solidHeader
-            ? 'py-3 bg-white/90 backdrop-blur-xl border-b border-slate-200/60 shadow-sm shadow-slate-900/5'
-            : 'py-6 bg-transparent'
+            ? "py-3 bg-white/90 backdrop-blur-xl border-b border-slate-200/60 shadow-sm shadow-slate-900/5"
+            : "py-6 bg-transparent"
         }`}
       >
         <Container>
           <nav className="flex items-center justify-between">
-
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2.5 group z-50">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                solidHeader
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                  : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
-              }`}>
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                  solidHeader
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
+                    : "bg-white/10 backdrop-blur-sm text-white border border-white/20"
+                }`}
+              >
                 <Wind size={18} />
               </div>
-              <span className={`text-lg font-black tracking-tight transition-colors duration-300 ${
-                solidHeader ? 'text-slate-900' : 'text-white'
-              }`}>
+              <span
+                className={`text-lg font-black tracking-tight transition-colors duration-300 ${
+                  solidHeader ? "text-slate-900" : "text-white"
+                }`}
+              >
                 ArcticFresh<span className="text-blue-500">.</span>
               </span>
             </Link>
@@ -102,11 +110,11 @@ const Header = () => {
                   className={`relative px-4 py-2 text-[12px] font-bold uppercase tracking-widest rounded-xl transition-all duration-300 ${
                     isActive(link.path)
                       ? solidHeader
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-white bg-white/15 backdrop-blur-sm'
+                        ? "text-blue-600 bg-blue-50"
+                        : "text-white bg-white/15 backdrop-blur-sm"
                       : solidHeader
-                        ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                        : "text-white/70 hover:text-white hover:bg-white/10"
                   }`}
                 >
                   {link.name}
@@ -114,7 +122,11 @@ const Header = () => {
                     <motion.div
                       layoutId="nav-indicator"
                       className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-500"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
                     />
                   )}
                 </Link>
@@ -123,22 +135,21 @@ const Header = () => {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-3">
-
               {/* Call Now Dropdown */}
               <div className="hidden xl:block relative" ref={callDropdownRef}>
                 <button
                   onClick={() => setCallDropdownOpen(!callDropdownOpen)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${
                     solidHeader
-                      ? 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-blue-300 hover:text-blue-600'
-                      : 'bg-white/10 text-white/80 border border-white/20 hover:bg-white/20 hover:text-white'
+                      ? "bg-slate-50 text-slate-600 border border-slate-200 hover:border-blue-300 hover:text-blue-600"
+                      : "bg-white/10 text-white/80 border border-white/20 hover:bg-white/20 hover:text-white"
                   }`}
                 >
                   <Phone size={12} />
                   Call Now
                   <ChevronDown
                     size={11}
-                    className={`transition-transform duration-200 ${callDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`transition-transform duration-200 ${callDropdownOpen ? "rotate-180" : ""}`}
                   />
                 </button>
 
@@ -149,11 +160,13 @@ const Header = () => {
                       initial={{ opacity: 0, y: -8, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
                       className="absolute top-full mt-2 right-0 w-52 bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-100 overflow-hidden z-50"
                     >
                       <div className="px-3 py-2 border-b border-slate-50">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Select a number to call</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                          Select a number to call
+                        </p>
                       </div>
                       {phones.map((p) => (
                         <a
@@ -163,11 +176,18 @@ const Header = () => {
                           className="flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 transition-colors group"
                         >
                           <div className="w-8 h-8 rounded-xl bg-blue-100 group-hover:bg-blue-600 flex items-center justify-center flex-shrink-0 transition-colors">
-                            <Phone size={13} className="text-blue-600 group-hover:text-white transition-colors" />
+                            <Phone
+                              size={13}
+                              className="text-blue-600 group-hover:text-white transition-colors"
+                            />
                           </div>
                           <div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{p.label}</div>
-                            <div className="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors">{p.display}</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                              {p.label}
+                            </div>
+                            <div className="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
+                              {p.display}
+                            </div>
                           </div>
                         </a>
                       ))}
@@ -176,26 +196,38 @@ const Header = () => {
                 </AnimatePresence>
               </div>
 
-              {!authLoading && (
-                user ? (
+              {!authLoading &&
+                (user ? (
                   <div className="flex items-center gap-2">
                     <Link
                       to="/dashboard"
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
                         solidHeader
-                          ? 'text-slate-600 hover:text-blue-600 hover:bg-blue-50'
-                          : 'text-white/80 hover:text-white hover:bg-white/10'
+                          ? "text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                          : "text-white/80 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       <User size={14} />
                       Dashboard
                     </Link>
+                    {user?.role === "admin" && (
+                      <Link
+                        to="/admin"
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                          solidHeader
+                            ? "text-purple-600 hover:bg-purple-50"
+                            : "text-purple-300 hover:text-purple-200 hover:bg-purple-500/20"
+                        }`}
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
                     <button
                       onClick={logout}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
                         solidHeader
-                          ? 'text-slate-400 hover:text-red-500 hover:bg-red-50'
-                          : 'text-white/50 hover:text-white hover:bg-white/10'
+                          ? "text-slate-400 hover:text-red-500 hover:bg-red-50"
+                          : "text-white/50 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       <LogOut size={14} />
@@ -208,8 +240,8 @@ const Header = () => {
                       to="/login"
                       className={`px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
                         solidHeader
-                          ? 'text-slate-500 hover:text-slate-900'
-                          : 'text-white/70 hover:text-white'
+                          ? "text-slate-500 hover:text-slate-900"
+                          : "text-white/70 hover:text-white"
                       }`}
                     >
                       Login
@@ -221,8 +253,7 @@ const Header = () => {
                       Book Service
                     </Link>
                   </div>
-                )
-              )}
+                ))}
               {authLoading && (
                 <div className="w-24 h-8 bg-slate-100 animate-pulse rounded-xl" />
               )}
@@ -233,19 +264,31 @@ const Header = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 z-50 ${
                 mobileMenuOpen
-                  ? 'bg-slate-900 text-white'
+                  ? "bg-slate-900 text-white"
                   : solidHeader
-                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    : 'bg-white/10 text-white backdrop-blur-sm'
+                    ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    : "bg-white/10 text-white backdrop-blur-sm"
               }`}
             >
               <AnimatePresence mode="wait">
                 {mobileMenuOpen ? (
-                  <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <motion.div
+                    key="x"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     <X size={18} />
                   </motion.div>
                 ) : (
-                  <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     <Menu size={18} />
                   </motion.div>
                 )}
@@ -271,10 +314,10 @@ const Header = () => {
 
             {/* Drawer */}
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
               className="fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 lg:hidden flex flex-col shadow-2xl shadow-black/20"
             >
               {/* Drawer Header */}
@@ -283,7 +326,9 @@ const Header = () => {
                   <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
                     <Wind size={16} className="text-white" />
                   </div>
-                  <span className="font-black text-slate-900">ArcticFresh<span className="text-blue-500">.</span></span>
+                  <span className="font-black text-slate-900">
+                    ArcticFresh<span className="text-blue-500">.</span>
+                  </span>
                 </div>
               </div>
 
@@ -300,8 +345,8 @@ const Header = () => {
                       to={link.path}
                       className={`flex items-center justify-between px-4 py-3.5 rounded-xl font-bold text-sm transition-all ${
                         isActive(link.path)
-                          ? 'bg-blue-50 text-blue-600'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                          ? "bg-blue-50 text-blue-600"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       }`}
                     >
                       {link.name}
@@ -317,7 +362,9 @@ const Header = () => {
               <div className="p-6 border-t border-slate-100 space-y-3">
                 {/* Both phone numbers */}
                 <div className="space-y-2">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 px-1">Call Us</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 px-1">
+                    Call Us
+                  </p>
                   {phones.map((p) => (
                     <a
                       key={p.number}
@@ -325,10 +372,15 @@ const Header = () => {
                       className="flex items-center gap-3 w-full py-3 px-4 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all group"
                     >
                       <div className="w-7 h-7 rounded-lg bg-blue-100 group-hover:bg-blue-600 flex items-center justify-center flex-shrink-0 transition-colors">
-                        <Phone size={12} className="text-blue-600 group-hover:text-white transition-colors" />
+                        <Phone
+                          size={12}
+                          className="text-blue-600 group-hover:text-white transition-colors"
+                        />
                       </div>
                       <div>
-                        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{p.label}</div>
+                        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                          {p.label}
+                        </div>
                         <div className="text-sm font-bold">{p.display}</div>
                       </div>
                     </a>
@@ -337,19 +389,39 @@ const Header = () => {
 
                 {user ? (
                   <>
-                    <Link to="/dashboard" className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all">
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all"
+                    >
                       <User size={14} /> Dashboard
                     </Link>
-                    <button onClick={logout} className="w-full py-3 rounded-xl text-red-500 font-bold text-sm hover:bg-red-50 transition-all">
+                    {user?.role === "admin" && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-purple-200 text-purple-600 font-bold text-sm hover:bg-purple-50 transition-all"
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button
+                      onClick={logout}
+                      className="w-full py-3 rounded-xl text-red-500 font-bold text-sm hover:bg-red-50 transition-all"
+                    >
                       Sign Out
                     </button>
                   </>
                 ) : (
                   <>
-                    <Link to="/login" className="flex items-center justify-center w-full py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all">
+                    <Link
+                      to="/login"
+                      className="flex items-center justify-center w-full py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all"
+                    >
                       Login / Sign Up
                     </Link>
-                    <Link to="/services" className="flex items-center justify-center w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-500 transition-all shadow-md shadow-blue-500/30">
+                    <Link
+                      to="/services"
+                      className="flex items-center justify-center w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-500 transition-all shadow-md shadow-blue-500/30"
+                    >
                       Book Service Now
                     </Link>
                   </>
